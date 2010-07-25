@@ -29,7 +29,7 @@
 #include <QToolBar>
 #include <QTreeWidget>
 
-#include "GTest.h"
+#include "GTestExecutable.h"
 
 class GTestRunner : public QMainWindow
 {

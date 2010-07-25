@@ -14,7 +14,7 @@
  * Boston, MA 02111-1307 USA                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "GTest.h"
+#include "GTestExecutable.h"
 
 #include <QDebug>
 #include <QFile>

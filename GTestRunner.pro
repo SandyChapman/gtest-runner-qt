@@ -2,11 +2,11 @@ TEMPLATE = app
 TARGET = GTestRunner
 QT += core \
     gui
-HEADERS += include/GTest.h \
+HEADERS += include/GTestExecutable.h \
     include/GTestParser.h \
     include/GTestRunner.h
-SOURCES += main.cpp \
-    src/GTest.cpp \
+SOURCES += src/GTestExecutable.cpp \
+    main.cpp \
     src/GTestParser.cpp \
     src/GTestRunner.cpp
 FORMS += 
