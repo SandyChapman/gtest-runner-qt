@@ -18,7 +18,8 @@
 
 GTestFixture::GTestFixture(QString name)
 : name(name), testList()
-{
+{}
 
+void GTestFixture::receiveRunRequest() {
+	runList.append((GTest*)QObject::sender());
 }
-

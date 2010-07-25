@@ -22,6 +22,7 @@
 #include <QGroupBox>
 #include <QMessageBox>
 #include <QTreeWidgetItem>
+#include <QTreeWidgetItemIterator>
 #include <QVBoxLayout>
 
 GTestRunner::GTestRunner(QWidget *parent, Qt::WFlags flags)
@@ -202,24 +203,36 @@ void GTestRunner::updateListing(GTestExecutable* gtest) {
 	testContainer->setFlags(Qt::ItemIsTristate | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
 	testContainer->setCheckState(0, Qt::Checked);
 	QVariant var;
-	var.setValue(gtest);
+	var.setValue<GTestExecutable*>(gtest);
 	testContainer->setData(0,Qt::UserRole,var);
 
 	QTreeWidgetItem* topLevelItem = 0;
 	QTreeWidgetItem* newItem = 0;
+	GTestFixture* fixture = 0;
+	GTest* test = 0;
 	while(it != testList.end()) {
 		qDebug() << *it;
 		if(it->endsWith(".")) {
 			//drop the '.' and make it a data item
-			topLevelItem = new QTreeWidgetItem(testContainer, QStringList()<<(it->left(it->size()-1)));
+			QString fixtureName = it->left(it->size()-1);
+			topLevelItem = new QTreeWidgetItem(testContainer, QStringList()<<fixtureName);
 			topLevelItem->setFlags(Qt::ItemIsTristate | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
 			topLevelItem->setCheckState(0, Qt::Checked);
+			fixture = new GTestFixture(fixtureName);
+			var.setValue<GTestFixture*>(fixture);
+			topLevelItem->setData(0,Qt::UserRole,var);
+			gtest->addTestFixture(fixture);
 		}
 		else {
 			//drop the spaces and make it a data item
-			newItem = new QTreeWidgetItem(topLevelItem, QStringList()<<(it->right(it->size()-2)));
+			QString testName = it->right(it->size()-2);
+			newItem = new QTreeWidgetItem(topLevelItem, QStringList()<<testName);
 			newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
 			newItem->setCheckState(0,Qt::Checked);
+			test = new GTest(testName);
+			var.setValue<GTest*>(test);
+			newItem->setData(0,Qt::UserRole,var);
+			fixture->addTest(test);
 		}
 		++it;
 	}
@@ -230,6 +243,7 @@ void GTestRunner::updateAllListings() {
 }
 
 void GTestRunner::runTests() {
+	/*
 	for(int i=0, j=testTree.topLevelItemCount(); i<j; i++) {
 		QVariant var = testTree.topLevelItem(i)->data(0,Qt::UserRole);
 		GTestExecutable* gtest = var.value<GTestExecutable*>();
@@ -242,6 +256,24 @@ void GTestRunner::runTests() {
 			QMessageBox::warning(this,"Invalid Google Test",
 					"An error has occurred when attempting to run a Google Test.");
 	}
+	*/
+	{
+		QTreeWidgetItemIterator it(&testTree, QTreeWidgetItemIterator::NoChildren);
+		while(*it) {
+			if((*it)->checkState(0) != Qt::Checked)
+				continue;
+			(*it)->data(0,Qt::UserRole).value<GTest*>()->run();
+		}
+	}
+	{
+		QTreeWidgetItemIterator it(&testTree, QTreeWidgetItemIterator::HasChildren);
+		while(*it) {
+			if((*it)->checkState(0) != Qt::Checked)
+				continue;
+			(*it)->data(0,Qt::UserRole).value<GTest*>()->run();
+		}
+	}
+
 }
 
 void GTestRunner::fillTestResults(GTestExecutable* gtest) {

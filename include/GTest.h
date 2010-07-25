@@ -17,9 +17,13 @@
 #ifndef GTEST_H_
 #define GTEST_H_
 
+#include <QMetaType>
+#include <QObject>
 #include <QString>
 
-class GTest {
+class GTest : public QObject {
+
+Q_OBJECT
 
 public:
 	enum STATE {
@@ -32,14 +36,20 @@ private:
 	QString name;
 	STATE state;
 
+signals:
+	void requestingRun();
+
 public:
 	GTest(QString name);
-
 	STATE getState() const;
+	void run();
 
 };
 
+Q_DECLARE_METATYPE(GTest*);
+
 inline GTest::STATE GTest::getState() const { return state; }
 
+inline void GTest::run() { emit requestingRun(); }
 
 #endif /* GTEST_H_ */

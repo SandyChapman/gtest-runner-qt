@@ -17,22 +17,46 @@
 #ifndef GTESTFIXTURE_H_
 #define GTESTFIXTURE_H_
 
+#include <QList>
+#include <QMetaType>
+#include <QObject>
+
 #include "GTest.h"
 
-#include <QList>
+class GTestFixture : public QObject {
 
-class GTestFixture {
+Q_OBJECT
 
 private:
 	QString name;
 	QList<GTest*> testList;
+	QList<GTest*> runList;
+
+signals:
+	void requestRun();
+
+public slots:
+	void receiveRunRequest();
 
 public:
 	GTestFixture(QString name);
 	void addTest(GTest* test);
+	void removeTest(GTest* test);
 
 };
 
-inline void GTestFixture::addTest(GTest* test) { testList << test; }
+Q_DECLARE_METATYPE(GTestFixture*);
+
+inline void GTestFixture::addTest(GTest* test) {
+	testList << test;
+	QObject::connect(test, SIGNAL(requestRun()),
+					 this, SLOT(receiveRunRequest()));
+}
+
+inline void GTestFixture::removeTest(GTest* test) {
+	testList.removeOne(test);
+	QObject::disconnect(test, SIGNAL(requestRun()),
+						this, SLOT(receiveRunRequest()));
+}
 
 #endif /* GTESTFIXTURE_H_ */

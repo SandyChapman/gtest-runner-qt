@@ -14,14 +14,16 @@
  * Boston, MA 02111-1307 USA                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef GTEST_H_
-#define GTEST_H_
+#ifndef GTESTEXECUTABLE_H_
+#define GTESTEXECUTABLE_H_
 
 #include <QBuffer>
 #include <QObject>
 #include <QProcess>
 #include <QMetaType>
 #include <QMutex>
+
+#include "GTestFixture.h"
 
 class GTestExecutable : public QObject {
 
@@ -43,6 +45,7 @@ private:
 	QBuffer standardOutput;
 	QBuffer standardError;
 	QStringList listing;
+	QList<GTestFixture*> fixtureList;
 
 	QProcess::ProcessError error;
 	QProcess::ExitStatus exitStatus;
@@ -70,36 +73,37 @@ public:
 	GTestExecutable(const GTestExecutable& other);
 	~GTestExecutable();
 
-	void produceListing();
-	QStringList getListing();
-
-	void setExecutablePath(QString executablePath);
-	QString getExecutablePath();
-
-	QProcess::ProcessError getError();
-	QProcess::ExitStatus getExitStatus();
-	int getExitCode();
+//GETS:
+	QProcess::ProcessError getError() const;
+	QString getExecutablePath() const;
+	int getExitCode() const;
+	QProcess::ExitStatus getExitStatus() const;
+	QStringList getListing() const;
 	STATE getState();
+
+//SETS:
+	void setExecutablePath(QString executablePath);
+
+//METHODS:
+	void produceListing();
+	void addTestFixture(GTestFixture* fixture);
+	void removeTestFixture(GTestFixture* fixture);
 
 };
 
-Q_DECLARE_METATYPE(GTestExecutable);
 Q_DECLARE_METATYPE(GTestExecutable*);
 
+inline QStringList GTestExecutable::getListing() const { return listing; }
 
-inline QStringList GTestExecutable::getListing() {
-	return listing;
-}
+inline QString GTestExecutable::getExecutablePath() const { return filePath; }
 
-inline QString GTestExecutable::getExecutablePath() { return filePath; }
+inline QProcess::ProcessError GTestExecutable::getError() const { return error; }
 
-inline QProcess::ProcessError GTestExecutable::getError() { return error; }
+inline QProcess::ExitStatus GTestExecutable::getExitStatus() const { return exitStatus; }
 
-inline QProcess::ExitStatus GTestExecutable::getExitStatus() { return exitStatus; }
-
-inline int GTestExecutable::getExitCode() { return exitCode; }
+inline int GTestExecutable::getExitCode() const { return exitCode; }
 
 inline void GTestExecutable::setExecutablePath(QString executablePath) { this->filePath = executablePath; }
 
 
-#endif /* GTEST_H_ */
+#endif /* GTESTEXECUTABLE_H_ */
