@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * GTest.h - Created on 2010-07-23                                                           *
+ * GTestExecutable.h - Created on 2010-07-23                                                           *
  *                                                                                           *
  * Copyright (C) 2010 Sandy Chapman                                                          *
  *                                                                                           *
@@ -20,9 +20,10 @@
 #include <QBuffer>
 #include <QObject>
 #include <QProcess>
+#include <QMetaType>
 #include <QMutex>
 
-class GTest : public QObject {
+class GTestExecutable : public QObject {
 
 Q_OBJECT
 
@@ -52,8 +53,8 @@ private:
 	void readExecutableOutput(QBuffer& standardChannel);
 
 signals:
-	void listingReady(GTest* sender);
-	void testResultsReady(GTest* sender);
+	void listingReady(GTestExecutable* sender);
+	void testResultsReady(GTestExecutable* sender);
 
 public slots:
 	void standardErrorAvailable();
@@ -65,10 +66,9 @@ public slots:
 
 public:
 
-
-
-	GTest(QString executablePath = QString());
-	~GTest();
+	GTestExecutable(QObject* parent = 0, QString executablePath = QString());
+	GTestExecutable(const GTestExecutable& other);
+	~GTestExecutable();
 
 	void produceListing();
 	QStringList getListing();
@@ -78,25 +78,28 @@ public:
 
 	QProcess::ProcessError getError();
 	QProcess::ExitStatus getExitStatus();
-	const int getExitCode();
+	int getExitCode();
 	STATE getState();
 
 };
 
+Q_DECLARE_METATYPE(GTestExecutable);
+Q_DECLARE_METATYPE(GTestExecutable*);
 
-inline QStringList GTest::getListing() {
+
+inline QStringList GTestExecutable::getListing() {
 	return listing;
 }
 
-inline QString GTest::getExecutablePath() { return filePath; }
+inline QString GTestExecutable::getExecutablePath() { return filePath; }
 
-inline QProcess::ProcessError GTest::getError() { return error; }
+inline QProcess::ProcessError GTestExecutable::getError() { return error; }
 
-inline QProcess::ExitStatus GTest::getExitStatus() { return exitStatus; }
+inline QProcess::ExitStatus GTestExecutable::getExitStatus() { return exitStatus; }
 
-inline const int GTest::getExitCode() { return exitCode; }
+inline int GTestExecutable::getExitCode() { return exitCode; }
 
-inline void GTest::setExecutablePath(QString executablePath) { this->filePath = executablePath; }
+inline void GTestExecutable::setExecutablePath(QString executablePath) { this->filePath = executablePath; }
 
 
 #endif /* GTEST_H_ */

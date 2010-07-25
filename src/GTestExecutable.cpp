@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * GTest.cpp - Created on 2010-07-23                                                         *
+ * GTestExecutable.cpp - Created on 2010-07-23                                                         *
  *                                                                                           *
  * Copyright (C) 2010 Sandy Chapman                                                          *
  *                                                                                           *
@@ -18,19 +18,28 @@
 
 #include <QDebug>
 #include <QFile>
+#include <QMessageBox>
 
-GTest::GTest(QString filePath)
-: filePath(filePath), state(VALID), processLock(),
+GTestExecutable::GTestExecutable(QObject* parent, QString filePath)
+: QObject(parent), filePath(filePath), state(VALID), processLock(),
   gtest(0), outputLock(), standardOutput(), standardError()
 {
 	getState();
 }
 
-GTest::~GTest() {
+GTestExecutable::GTestExecutable(const GTestExecutable& other)
+: QObject(other.parent()),filePath(other.filePath), state(other.state),
+  processLock(), gtest(0), outputLock(), standardOutput(),
+  standardError()
+{
+	getState();
+}
+
+GTestExecutable::~GTestExecutable() {
 
 }
 
-void GTest::produceListing() {
+void GTestExecutable::produceListing() {
 	//We lock so that any attempt to try to produce a listing
 	//or run a test will block until we're done with what we're
 	//doing here.
@@ -42,13 +51,26 @@ void GTest::produceListing() {
 	//unlock the processLock in the parseListing slot
 }
 
-void GTest::parseListing(int exitCode, QProcess::ExitStatus exitStatus) {
-
+void GTestExecutable::parseListing(int /*exitCode*/, QProcess::ExitStatus exitStatus) {
+	if(exitStatus != QProcess::NormalExit) {
+		QMessageBox::warning((QWidget*)this->parent(),"Error Retrieving Listing",
+				"The Google test executable exited abnormally.");
+		processLock.unlock();
+	}
+	standardOutput.open(QBuffer::ReadOnly);
+	QByteArray temp;
+	while(standardOutput.canReadLine()) {
+		temp = standardOutput.readLine();
+		temp.resize(temp.size()-1);
+		qDebug() << temp;
+		listing << temp;
+	}
+	standardOutput.close();
 	processLock.unlock();
 	emit listingReady(this);
 }
 
-void GTest::runTest() {
+void GTestExecutable::runTest() {
 	//We lock so that any attempt to try to produce a listing
 	//or run a test will block until we're done with what we're
 	//doing here.
@@ -60,13 +82,12 @@ void GTest::runTest() {
 	//unlock the processLock in the parseTestResults slot
 }
 
-void GTest::parseTestResults(int exitCode, QProcess::ExitStatus exitStatus) {
-
+void GTestExecutable::parseTestResults(int exitCode, QProcess::ExitStatus exitStatus) {
 	processLock.unlock();
 	emit testResultsReady(this);
 }
 
-void GTest::setupExecutable() {
+void GTestExecutable::setupExecutable() {
 	//Should we check and see if gtest is non-zero?
 	//if(gtest != 0) {}
 	gtest = new QProcess();
@@ -76,7 +97,7 @@ void GTest::setupExecutable() {
 					 this, SLOT(executableFinished(int, QProcess::ExitStatus)));
 }
 
-void GTest::standardOutputAvailable() {
+void GTestExecutable::standardOutputAvailable() {
 	qDebug() << "std output available...";
 	outputLock.lock();
 	gtest->setReadChannel(QProcess::StandardOutput);
@@ -85,7 +106,7 @@ void GTest::standardOutputAvailable() {
 	qDebug() << "List finished populating";
 }
 
-void GTest::standardErrorAvailable() {
+void GTestExecutable::standardErrorAvailable() {
 	qDebug() << "std error available...";
 	outputLock.lock();
 	gtest->setReadChannel(QProcess::StandardError);
@@ -94,13 +115,14 @@ void GTest::standardErrorAvailable() {
 	qDebug() << "List finished populating";
 }
 
-void GTest::readExecutableOutput(QBuffer& standardChannel) {
+void GTestExecutable::readExecutableOutput(QBuffer& standardChannel) {
 	//Don't expect it to be that large,
 	//but whatever, who doesn't have a MB
 	//or two lying around?
 	const int BUF_SIZE = 1024;
 	char buffer[BUF_SIZE];
 	qint64 lineLength;
+	standardChannel.open(QBuffer::WriteOnly);
 	while(!gtest->atEnd()) {
 		while(gtest->canReadLine()) {
 			qDebug() << "reading a line...";
@@ -111,9 +133,10 @@ void GTest::readExecutableOutput(QBuffer& standardChannel) {
 			}
 		}
 	}
+	standardChannel.close();
 }
 
-void GTest::executableFinished(int exitCode, QProcess::ExitStatus exitStatus) {
+void GTestExecutable::executableFinished(int exitCode, QProcess::ExitStatus exitStatus) {
 	qDebug() << "exe finished";
 	QObject::disconnect(gtest, SIGNAL(readyReadStandardOutput()),
 						this, SLOT(standardOutputAvailable()));
@@ -129,7 +152,7 @@ void GTest::executableFinished(int exitCode, QProcess::ExitStatus exitStatus) {
 	gtest = 0;
 }
 
-GTest::STATE GTest::getState() {
+GTestExecutable::STATE GTestExecutable::getState() {
 	state = VALID;
 	QFile file(filePath);
 	if(!file.exists()) {

@@ -41,9 +41,13 @@ public:
 
 public slots:
 	void addTests();
-	void updateListing(GTest* listing);
 	void updateAllListings();
 	void runTests();
+
+	void updateListing(GTestExecutable* gtest);
+
+	void fillTestResults(GTestExecutable* gtest);
+
 	void treeItemClicked(QTreeWidgetItem* item, int column);
 
 private:
@@ -56,7 +60,7 @@ private:
 	QToolBar testTreeTools;
 	QTreeWidget testTree;
 
-	QList<GTest*> gtestList;
+	QList<GTestExecutable*> gtestList;
 
 	void setup();
 	void setupMenus();

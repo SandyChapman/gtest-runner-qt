@@ -88,6 +88,9 @@ void GTestRunner::setupToolBars() {
 	QAction* addTestsAct = new QAction(tr("Add"), this);
 	QAction* removeTestsAct = new QAction(tr("Remove"), this);
 
+	QObject::connect(runTestsAct, SIGNAL(triggered()),
+					 this, SLOT(runTests()));
+
 	QObject::connect(addTestsAct, SIGNAL(triggered()),
 					 this, SLOT(addTests()));
 
@@ -113,7 +116,7 @@ void GTestRunner::setupLayout() {
 void GTestRunner::addTests() {
 	bool addResolved = false;
 	QString filepath;
-	GTest* newTest = new GTest();
+	GTestExecutable* newTest = new GTestExecutable(this);
 	while(!addResolved) {
 		filepath = QFileDialog::getOpenFileName(this, tr("Select Google Test Executable"));
 		qDebug() << "File path received:" << filepath;
@@ -121,9 +124,9 @@ void GTestRunner::addTests() {
 			return;
 
 		newTest->setExecutablePath(filepath);
-		GTest::STATE state = newTest->getState();
+		GTestExecutable::STATE state = newTest->getState();
 		switch(state) {
-			case GTest::FILE_NOT_FOUND: {
+			case GTestExecutable::FILE_NOT_FOUND: {
 				QMessageBox::StandardButton btnPressed = QMessageBox::warning(this,
 						tr("File Not Found"),
 						tr("It appears the filename entered does not exist. Please select a valid Google test executable."),
@@ -136,7 +139,7 @@ void GTestRunner::addTests() {
 					}
 			break;
 			}
-			case GTest::INSUFFICIENT_PRIVILEGES: {
+			case GTestExecutable::INSUFFICIENT_PRIVILEGES: {
 				QMessageBox::StandardButton btnPressed = QMessageBox::warning(this,
 						tr("Insufficient Permissions"),
 						tr("It appears that you do not have sufficient privileges to execute this file. \
@@ -162,7 +165,7 @@ void GTestRunner::addTests() {
 				}
 				break;
 			}
-			case GTest::VALID: {
+			case GTestExecutable::VALID: {
 				addResolved = true;
 				break;
 			}
@@ -173,17 +176,17 @@ void GTestRunner::addTests() {
 }
 
 void GTestRunner::invokeListingRetrieval(QString filepath) {
-	GTest *listing = new GTest(filepath);
-	QObject::connect(listing, SIGNAL(listingReady(GTest*)),
-					 this, SLOT(updateListing(GTest*)));
-	listing->produceListing();
+	GTestExecutable *gtest = new GTestExecutable(this, filepath);
+	QObject::connect(gtest, SIGNAL(listingReady(GTestExecutable*)),
+					 this, SLOT(updateListing(GTestExecutable*)));
+	gtest->produceListing();
 }
 
-void GTestRunner::updateListing(GTest* listing) {
+void GTestRunner::updateListing(GTestExecutable* gtest) {
 	qDebug() << "Updating listing";
-	const int exitCode = listing->getExitCode();
+	const int exitCode = gtest->getExitCode();
 	qDebug() << "got exit code:" << exitCode;
-	QString exePath = listing->getExecutablePath();
+	QString exePath = gtest->getExecutablePath();
 	qDebug() << "got exe path:" << exePath;
 	if(exitCode != 0) {
 		QMessageBox::critical(this, "Error Retrieving Test Listing",
@@ -191,13 +194,16 @@ void GTestRunner::updateListing(GTest* listing) {
 		//TODO: perform switch statement of process error.
 		return;
 	}
-	QStringList testList = listing->getListing();
+	QStringList testList = gtest->getListing();
 	qDebug() << "Retrieved listing. Size ="<<testList.size();
 	QStringList::iterator it = testList.begin();
 
 	QTreeWidgetItem* testContainer = new QTreeWidgetItem(&testTree,QStringList() << exePath);
 	testContainer->setFlags(Qt::ItemIsTristate | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
 	testContainer->setCheckState(0, Qt::Checked);
+	QVariant var;
+	var.setValue(gtest);
+	testContainer->setData(0,Qt::UserRole,var);
 
 	QTreeWidgetItem* topLevelItem = 0;
 	QTreeWidgetItem* newItem = 0;
@@ -224,6 +230,21 @@ void GTestRunner::updateAllListings() {
 }
 
 void GTestRunner::runTests() {
+	for(int i=0, j=testTree.topLevelItemCount(); i<j; i++) {
+		QVariant var = testTree.topLevelItem(i)->data(0,Qt::UserRole);
+		GTestExecutable* gtest = var.value<GTestExecutable*>();
+		if(gtest != 0 && gtest->getState() == GTestExecutable::VALID) {
+			QObject::connect(gtest, SIGNAL(testResultsReady(GTestExecutable*)),
+							 this, SLOT(fillTestResults(GTestExecutable*)));
+			gtest->runTest();
+		}
+		else
+			QMessageBox::warning(this,"Invalid Google Test",
+					"An error has occurred when attempting to run a Google Test.");
+	}
+}
+
+void GTestRunner::fillTestResults(GTestExecutable* gtest) {
 
 }
 
