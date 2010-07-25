@@ -5,10 +5,10 @@ QT += core \
 HEADERS += include/GTest.h \
     include/GTestParser.h \
     include/GTestRunner.h
-SOURCES += src/GTest.cpp \
+SOURCES += main.cpp \
+    src/GTest.cpp \
     src/GTestParser.cpp \
-    src/GTestRunner.cpp \
-    main.cpp
+    src/GTestRunner.cpp
 FORMS += 
 RESOURCES += 
 INCLUDEPATH += include
