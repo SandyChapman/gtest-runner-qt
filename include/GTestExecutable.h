@@ -45,7 +45,7 @@ private:
 	QBuffer standardOutput;
 	QBuffer standardError;
 	QStringList listing;
-	QList<GTestFixture*> fixtureList;
+	QList<GTestCase*> runList;
 
 	QProcess::ProcessError error;
 	QProcess::ExitStatus exitStatus;
@@ -66,6 +66,7 @@ public slots:
 	void runTest();
 	void parseListing(int exitCode, QProcess::ExitStatus exitStatus);
 	void parseTestResults(int exitCode, QProcess::ExitStatus exitStatus);
+	void receiveRunRequest();
 
 public:
 
@@ -86,8 +87,6 @@ public:
 
 //METHODS:
 	void produceListing();
-	void addTestFixture(GTestFixture* fixture);
-	void removeTestFixture(GTestFixture* fixture);
 
 };
 

@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * GTestFixture.h - Created on 2010-07-25                                                    *
+ * GTestCase.h - Created on 2010-07-25                                                    *
  *                                                                                           *
  * Copyright (C) 2010 Sandy Chapman                                                          *
  *                                                                                           *
@@ -23,7 +23,7 @@
 
 #include "GTest.h"
 
-class GTestFixture : public QObject {
+class GTestCase : public QObject {
 
 Q_OBJECT
 
@@ -34,29 +34,33 @@ private:
 
 signals:
 	void requestRun();
+	void resultsReceived();
 
 public slots:
 	void receiveRunRequest();
 
 public:
-	GTestFixture(QString name);
+	GTestCase(QString name);
 	void addTest(GTest* test);
 	void removeTest(GTest* test);
+	void run();
 
 };
 
-Q_DECLARE_METATYPE(GTestFixture*);
+Q_DECLARE_METATYPE(GTestCase*);
 
-inline void GTestFixture::addTest(GTest* test) {
+inline void GTestCase::addTest(GTest* test) {
 	testList << test;
 	QObject::connect(test, SIGNAL(requestRun()),
 					 this, SLOT(receiveRunRequest()));
 }
 
-inline void GTestFixture::removeTest(GTest* test) {
+inline void GTestCase::removeTest(GTest* test) {
 	testList.removeOne(test);
 	QObject::disconnect(test, SIGNAL(requestRun()),
 						this, SLOT(receiveRunRequest()));
 }
+
+inline void GTestCase::run() { emit requestRun(); }
 
 #endif /* GTESTFIXTURE_H_ */

@@ -164,13 +164,7 @@ GTestExecutable::STATE GTestExecutable::getState() {
 	return state;
 }
 
-void GTestExecutable::addTestFixture(GTestFixture* fixture) {
-	fixtureList.append(fixture);
+void GTestExecutable::receiveRunRequest() {
+	runList.append((GTestCase*)QObject::sender());
 }
-
-void GTestExecutable::removeTestFixture(GTestFixture* fixture) {
-	fixtureList.removeOne(fixture);
-}
-
-
 

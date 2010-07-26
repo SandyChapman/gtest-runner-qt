@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * GTestFixture.cpp - Created on 2010-07-25
+ * GTestCase.cpp - Created on 2010-07-25
  *
  * Copyright (C) 2010 Sandy Chapman
  *
@@ -14,12 +14,12 @@
  * Boston, MA 02111-1307 USA
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "GTestFixture.h"
+#include "GTestCase.h"
 
-GTestFixture::GTestFixture(QString name)
+GTestCase::GTestCase(QString name)
 : name(name), testList()
 {}
 
-void GTestFixture::receiveRunRequest() {
+void GTestCase::receiveRunRequest() {
 	runList.append((GTest*)QObject::sender());
 }
