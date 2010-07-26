@@ -22,7 +22,7 @@
 
 GTestExecutable::GTestExecutable(QObject* parent, QString filePath)
 : QObject(parent), filePath(filePath), state(VALID), processLock(),
-  gtest(0), outputLock(), standardOutput(), standardError()
+  gtest(0), outputLock(), standardOutput(), standardError(), runOnSignal(false)
 {
 	getState();
 }
@@ -84,6 +84,9 @@ void GTestExecutable::runTest() {
 
 void GTestExecutable::parseTestResults(int exitCode, QProcess::ExitStatus exitStatus) {
 	processLock.unlock();
+	if(exitStatus != QProcess::NormalExit)
+		return;
+
 	emit testResultsReady(this);
 }
 
@@ -164,7 +167,8 @@ GTestExecutable::STATE GTestExecutable::getState() {
 	return state;
 }
 
-void GTestExecutable::receiveRunRequest() {
+void GTestExecutable::receiveRunRequest(QString caseName, QString testName) {
 	runList.append((GTestCase*)QObject::sender());
+	testsToRun << caseName.append(".").append(testName);
 }
 

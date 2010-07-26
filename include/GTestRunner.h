@@ -39,6 +39,10 @@ public:
     GTestRunner(QWidget *parent = 0, Qt::WFlags flags = 0);
     ~GTestRunner();
 
+signals:
+	void aboutToRunTests();
+	void runningTests();
+
 public slots:
 	void addTests();
 	void updateAllListings();

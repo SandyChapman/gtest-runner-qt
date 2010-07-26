@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * GTestCase.cpp - Created on 2010-07-25
+ * GTestExecutableResults.cpp - Created on 2010-07-26
  *
  * Copyright (C) 2010 Sandy Chapman
  *
@@ -14,13 +14,8 @@
  * Boston, MA 02111-1307 USA
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "GTestCase.h"
+#include "GTestExecutableResults.h"
 
-GTestCase::GTestCase(QString name)
-: name(name), runList()
+GTestExecutableResults::GTestExecutableResults(QString name)
+: exeName(name)
 {}
-
-void GTestCase::receiveRunRequest(QString testName) {
-	runList.append((GTest*)QObject::sender());
-	emit requestRun(name, testName);
-}

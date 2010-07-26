@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * GTestCase.cpp - Created on 2010-07-25
+ * Defines.h - Created on 2010-07-26
  *
  * Copyright (C) 2010 Sandy Chapman
  *
@@ -14,13 +14,9 @@
  * Boston, MA 02111-1307 USA
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "GTestCase.h"
+#ifndef DEFINES_H_
+#define DEFINES_H_
 
-GTestCase::GTestCase(QString name)
-: name(name), runList()
-{}
+typedef unsigned int uint;
 
-void GTestCase::receiveRunRequest(QString testName) {
-	runList.append((GTest*)QObject::sender());
-	emit requestRun(name, testName);
-}
+#endif /* DEFINES_H_ */

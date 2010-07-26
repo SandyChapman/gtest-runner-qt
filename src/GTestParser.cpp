@@ -14,17 +14,34 @@
  * Boston, MA 02111-1307 USA                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <QXmlStreamAttributes>
+#include <QXmlStreamReader>
+
+
 #include "GTestParser.h"
 
-	QFile xmlSource;
-	QXmlStreamReader *xmlStream;
-
-GTestParser::GTestParser(QString filePath)
-: xmlSource(filePath), xmlStream(0)
-{
-
-}
+GTestParser::GTestParser(QIODevice* inStream)
+: xmlSource(inStream)
+{}
 
 void GTestParser::parse() {
-	xmlStream = new QXmlStreamReader();
+	QXmlStreamReader xmlStream(xmlSource);
+	QXmlStreamAttributes attributes;
+	GTestExecutableResults *testResults;
+	while(!xmlStream.atEnd()) {
+		while(!xmlStream.readNextStartElement());
+		attributes = xmlStream.attributes();
+		if(xmlStream.name() == "testcase")
+			;
+		else if(xmlStream.name() == "testsuite") {
+
+		}
+		else if(xmlStream.name() == "testsuites") {
+			testResults = new GTestExecutableResults(attributes.value("name").toString());
+			testResults->setTestRunCount(attributes.value("tests").toString().toUInt());
+			testResults->setTestFailureCount(attributes.value("failures").toString().toUInt());
+			testResults->setTestErrorCount(attributes.value("errors").toString().toUInt());
+			testResults->setTestTotalTime(attributes.value("time").toString().toUInt());
+		}
+	}
 }

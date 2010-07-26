@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * GTest.h - Created on 2010-07-25
+ * GTestExecutableResults.h - Created on 2010-07-26
  *
  * Copyright (C) 2010 Sandy Chapman
  *
@@ -14,42 +14,50 @@
  * Boston, MA 02111-1307 USA
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef GTEST_H_
-#define GTEST_H_
+#ifndef GTESTEXECUTABLERESULTS_H_
+#define GTESTEXECUTABLERESULTS_H_
 
-#include <QMetaType>
-#include <QObject>
 #include <QString>
 
-class GTest : public QObject {
+#include "Defines.h"
 
-Q_OBJECT
-
-public:
-	enum STATE {
-		PASSED,
-		FAILED,
-		NOT_RUN
-	};
+class GTestExecutableResults {
 
 private:
-	QString name;
-	STATE state;
-
-signals:
-	void requestingRun(QString testName);
+	QString exeName;
+	uint numTests;
+	uint numFailures;
+	uint numErrors;
+	uint totalTime;
 
 public:
-	GTest(QString name);
-	STATE getState() const;
-	void run();
+	GTestExecutableResults(QString name);
+	void setTestRunCount(uint count);
+	void setTestFailureCount(uint count);
+	void setTestErrorCount(uint count);
+	void setTestTotalTime(uint count);
+	uint getTestRunCount();
+	uint getTestFailureCount();
+	uint getTestErrorCount();
+	uint getTestTotalTime();
 
 };
 
-Q_DECLARE_METATYPE(GTest*);
+inline void GTestExecutableResults::setTestRunCount(uint count) {
+	numTests = count;
+}
 
-inline GTest::STATE GTest::getState() const { return state; }
+inline void GTestExecutableResults::setTestFailureCount(uint count) {
+	numFailures = count;
+}
 
-inline void GTest::run() { emit requestingRun(name); }
+inline void GTestExecutableResults::setTestErrorCount(uint count) {
+	numErrors = count;
+}
 
-#endif /* GTEST_H_ */
+inline void GTestExecutableResults::setTestTotalTime(uint count) {
+	totalTime = count;
+}
+
+
+#endif /* GTESTEXECUTABLERESULTS_H_ */

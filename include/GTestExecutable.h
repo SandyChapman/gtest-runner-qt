@@ -23,7 +23,7 @@
 #include <QMetaType>
 #include <QMutex>
 
-#include "GTestFixture.h"
+#include "GTestCase.h"
 
 class GTestExecutable : public QObject {
 
@@ -46,6 +46,8 @@ private:
 	QBuffer standardError;
 	QStringList listing;
 	QList<GTestCase*> runList;
+	QStringList testsToRun;
+	bool runOnSignal;
 
 	QProcess::ProcessError error;
 	QProcess::ExitStatus exitStatus;
@@ -66,7 +68,7 @@ public slots:
 	void runTest();
 	void parseListing(int exitCode, QProcess::ExitStatus exitStatus);
 	void parseTestResults(int exitCode, QProcess::ExitStatus exitStatus);
-	void receiveRunRequest();
+	void receiveRunRequest(QString testCase, QString testName);
 
 public:
 
@@ -81,12 +83,15 @@ public:
 	QProcess::ExitStatus getExitStatus() const;
 	QStringList getListing() const;
 	STATE getState();
+	void setRunFlag(bool runOnSignal);
 
 //SETS:
 	void setExecutablePath(QString executablePath);
 
 //METHODS:
 	void produceListing();
+	void addTestCase(GTestCase* testCase);
+	void removeTestCase(GTestCase* testCase);
 
 };
 
@@ -104,5 +109,16 @@ inline int GTestExecutable::getExitCode() const { return exitCode; }
 
 inline void GTestExecutable::setExecutablePath(QString executablePath) { this->filePath = executablePath; }
 
+inline void GTestExecutable::setRunFlag(bool runOnSignal) { this->runOnSignal = runOnSignal; }
+
+inline void GTestExecutable::addTestCase(GTestCase* testCase) {
+	QObject::connect(testCase, SIGNAL(requestRun(QString, QString)),
+					 this, SLOT(receiveRunRequest(QString, QString)));
+}
+
+inline void GTestExecutable::removeTestCase(GTestCase* testCase) {
+	QObject::disconnect(testCase, SIGNAL(requestRun(QString, QString)),
+					 this, SLOT(receiveRunRequest(QString, QString)));
+}
 
 #endif /* GTESTEXECUTABLE_H_ */

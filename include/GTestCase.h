@@ -29,15 +29,14 @@ Q_OBJECT
 
 private:
 	QString name;
-	QList<GTest*> testList;
 	QList<GTest*> runList;
 
 signals:
-	void requestRun();
+	void requestRun(QString caseName, QString testName);
 	void resultsReceived();
 
 public slots:
-	void receiveRunRequest();
+	void receiveRunRequest(QString testName);
 
 public:
 	GTestCase(QString name);
@@ -50,17 +49,13 @@ public:
 Q_DECLARE_METATYPE(GTestCase*);
 
 inline void GTestCase::addTest(GTest* test) {
-	testList << test;
-	QObject::connect(test, SIGNAL(requestRun()),
-					 this, SLOT(receiveRunRequest()));
+	QObject::connect(test, SIGNAL(requestRun(QString)),
+					 this, SLOT(receiveRunRequest(QString)));
 }
 
 inline void GTestCase::removeTest(GTest* test) {
-	testList.removeOne(test);
-	QObject::disconnect(test, SIGNAL(requestRun()),
-						this, SLOT(receiveRunRequest()));
+	QObject::disconnect(test, SIGNAL(requestRun(QString)),
+					 this, SLOT(receiveRunRequest(QString)));
 }
-
-inline void GTestCase::run() { emit requestRun(); }
 
 #endif /* GTESTFIXTURE_H_ */

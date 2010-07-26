@@ -19,23 +19,18 @@
 
 #include <QDir>
 #include <QFile>
-#include <QXmlStreamReader>
+
+#include "GTestExecutableResults.h"
 
 class GTestParser {
 
 private:
-	QFile xmlSource;
-	QXmlStreamReader *xmlStream;
-
-signals:
-	void reportTestResult(/*???*/);
-
-public slots:
-	void parse();
+	QIODevice *xmlSource;
 
 public:
-	GTestParser(QFile *inFile = 0);
-	GTestParser(QString filePath);
+	GTestParser(QIODevice *inStream);
+	void parse();
+
 
 };
 

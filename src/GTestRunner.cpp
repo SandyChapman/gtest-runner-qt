@@ -205,6 +205,10 @@ void GTestRunner::updateListing(GTestExecutable* gtest) {
 	QVariant var;
 	var.setValue<GTestExecutable*>(gtest);
 	testContainer->setData(0,Qt::UserRole,var);
+	QObject::connect(this, SIGNAL(aboutToRunTests()),
+					 gtest, SLOT(setRunFlag(false)));
+	QObject::connect(this, SIGNAL(runningTests()),
+					 gtest, SLOT(runTest()));
 
 	QTreeWidgetItem* topLevelItem = 0;
 	QTreeWidgetItem* newItem = 0;
@@ -241,26 +245,29 @@ void GTestRunner::updateAllListings() {
 }
 
 void GTestRunner::runTests() {
+	emit aboutToRunTests();
 	QTreeWidgetItemIterator it(&testTree, QTreeWidgetItemIterator::NoChildren);
 	while(*it) {
 		if((*it)->checkState(0) != Qt::Checked)
 			continue;
 		(*it)->data(0,Qt::UserRole).value<GTest*>()->run();
-		(*it)->parent()->data(0,Qt::UserRole).value<GTestCase*>()->run();
+		it++;
 	}
 	for(int i=0, j=testTree.topLevelItemCount(); i<j; i++) {
-		GTestExecutable* gtest = testTree.topLevelItem(i)->data(0,Qt::UserRole).value<GTestExecutable*>();
+		QTreeWidgetItem* topLevelItem = testTree.topLevelItem(i);
+		if(topLevelItem->checkState(0) == Qt::Unchecked)
+			continue;
+		GTestExecutable* gtest = topLevelItem->data(0,Qt::UserRole).value<GTestExecutable*>();
 		if(gtest != 0 && gtest->getState() == GTestExecutable::VALID) {
 			QObject::connect(gtest, SIGNAL(testResultsReady(GTestExecutable*)),
 							 this, SLOT(fillTestResults(GTestExecutable*)));
-			gtest->runTest();
+			gtest->setRunFlag(true);
 		}
 		else
 			QMessageBox::warning(this,"Invalid Google Test",
 					"An error has occurred when attempting to run a Google Test.");
 	}
-
-
+	emit runningTests();
 }
 
 void GTestRunner::fillTestResults(GTestExecutable* gtest) {
