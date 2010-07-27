@@ -23,7 +23,7 @@
 #include <QMetaType>
 #include <QMutex>
 
-#include "GTestCase.h"
+#include "GTestSuite.h"
 
 class GTestExecutable : public QObject {
 
@@ -45,7 +45,7 @@ private:
 	QBuffer standardOutput;
 	QBuffer standardError;
 	QStringList listing;
-	QList<GTestCase*> runList;
+	QList<GTestSuite*> runList;
 	QStringList testsToRun;
 	bool runOnSignal;
 
@@ -90,8 +90,8 @@ public:
 
 //METHODS:
 	void produceListing();
-	void addTestCase(GTestCase* testCase);
-	void removeTestCase(GTestCase* testCase);
+	void addTestCase(GTestSuite* testCase);
+	void removeTestCase(GTestSuite* testCase);
 
 };
 
@@ -111,12 +111,12 @@ inline void GTestExecutable::setExecutablePath(QString executablePath) { this->f
 
 inline void GTestExecutable::setRunFlag(bool runOnSignal) { this->runOnSignal = runOnSignal; }
 
-inline void GTestExecutable::addTestCase(GTestCase* testCase) {
+inline void GTestExecutable::addTestCase(GTestSuite* testCase) {
 	QObject::connect(testCase, SIGNAL(requestRun(QString, QString)),
 					 this, SLOT(receiveRunRequest(QString, QString)));
 }
 
-inline void GTestExecutable::removeTestCase(GTestCase* testCase) {
+inline void GTestExecutable::removeTestCase(GTestSuite* testCase) {
 	QObject::disconnect(testCase, SIGNAL(requestRun(QString, QString)),
 					 this, SLOT(receiveRunRequest(QString, QString)));
 }

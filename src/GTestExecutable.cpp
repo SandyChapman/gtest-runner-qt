@@ -168,7 +168,7 @@ GTestExecutable::STATE GTestExecutable::getState() {
 }
 
 void GTestExecutable::receiveRunRequest(QString caseName, QString testName) {
-	runList.append((GTestCase*)QObject::sender());
+	runList.append((GTestSuite*)QObject::sender());
 	testsToRun << caseName.append(".").append(testName);
 }
 

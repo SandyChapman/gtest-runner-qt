@@ -59,5 +59,14 @@ inline void GTestExecutableResults::setTestTotalTime(uint count) {
 	totalTime = count;
 }
 
+inline uint GTestExecutableResults::getTestRunCount() { return numTests; }
+
+inline uint GTestExecutableResults::getTestFailureCount() { return numFailures; }
+
+inline uint GTestExecutableResults::getTestErrorCount() { return numErrors; }
+
+inline uint GTestExecutableResults::getTestTotalTime() { return totalTime; }
+
+inline QString GTestExecutableResults::getTestName() { return exeName; }
 
 #endif /* GTESTEXECUTABLERESULTS_H_ */

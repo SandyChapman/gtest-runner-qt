@@ -212,7 +212,7 @@ void GTestRunner::updateListing(GTestExecutable* gtest) {
 
 	QTreeWidgetItem* topLevelItem = 0;
 	QTreeWidgetItem* newItem = 0;
-	GTestCase* fixture = 0;
+	GTestSuite* fixture = 0;
 	GTest* test = 0;
 	while(it != testList.end()) {
 		qDebug() << *it;
@@ -222,8 +222,8 @@ void GTestRunner::updateListing(GTestExecutable* gtest) {
 			topLevelItem = new QTreeWidgetItem(testContainer, QStringList()<<fixtureName);
 			topLevelItem->setFlags(Qt::ItemIsTristate | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
 			topLevelItem->setCheckState(0, Qt::Checked);
-			fixture = new GTestCase(fixtureName);
-			var.setValue<GTestCase*>(fixture);
+			fixture = new GTestSuite(fixtureName);
+			var.setValue<GTestSuite*>(fixture);
 			topLevelItem->setData(0,Qt::UserRole,var);
 		}
 		else {

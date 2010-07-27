@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * GTestCase.h - Created on 2010-07-25                                                    *
+ * GTestSuite.h - Created on 2010-07-25                                                    *
  *                                                                                           *
  * Copyright (C) 2010 Sandy Chapman                                                          *
  *                                                                                           *
@@ -23,7 +23,7 @@
 
 #include "GTest.h"
 
-class GTestCase : public QObject {
+class GTestSuite : public QObject {
 
 Q_OBJECT
 
@@ -39,21 +39,21 @@ public slots:
 	void receiveRunRequest(QString testName);
 
 public:
-	GTestCase(QString name);
+	GTestSuite(QString name);
 	void addTest(GTest* test);
 	void removeTest(GTest* test);
 	void run();
 
 };
 
-Q_DECLARE_METATYPE(GTestCase*);
+Q_DECLARE_METATYPE(GTestSuite*);
 
-inline void GTestCase::addTest(GTest* test) {
+inline void GTestSuite::addTest(GTest* test) {
 	QObject::connect(test, SIGNAL(requestRun(QString)),
 					 this, SLOT(receiveRunRequest(QString)));
 }
 
-inline void GTestCase::removeTest(GTest* test) {
+inline void GTestSuite::removeTest(GTest* test) {
 	QObject::disconnect(test, SIGNAL(requestRun(QString)),
 					 this, SLOT(receiveRunRequest(QString)));
 }

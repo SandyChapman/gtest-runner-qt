@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * GTestCase.cpp - Created on 2010-07-25
+ * GTestSuite.cpp - Created on 2010-07-25
  *
  * Copyright (C) 2010 Sandy Chapman
  *
@@ -14,13 +14,13 @@
  * Boston, MA 02111-1307 USA
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "GTestCase.h"
+#include "GTestSuite.h"
 
-GTestCase::GTestCase(QString name)
+GTestSuite::GTestSuite(QString name)
 : name(name), runList()
 {}
 
-void GTestCase::receiveRunRequest(QString testName) {
+void GTestSuite::receiveRunRequest(QString testName) {
 	runList.append((GTest*)QObject::sender());
 	emit requestRun(name, testName);
 }
