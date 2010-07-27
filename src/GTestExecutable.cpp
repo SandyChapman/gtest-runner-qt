@@ -15,6 +15,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "GTestExecutable.h"
+#include "GTestParser.h"
 
 #include <QDebug>
 #include <QFile>
@@ -44,7 +45,11 @@ void GTestExecutable::produceListing() {
 	//or run a test will block until we're done with what we're
 	//doing here.
 	processLock.lock();
-	setupExecutable();
+	gtest = new QProcess();
+	QObject::connect(gtest, SIGNAL(readyReadStandardOutput()),
+					 this, SLOT(standardOutputAvailable()));
+	QObject::connect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
+					 this, SLOT(executableFinished(int, QProcess::ExitStatus)));
 	QObject::connect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
 					 this, SLOT(parseListing(int, QProcess::ExitStatus)));
 	gtest->start(filePath, QStringList() << "--gtest_list_tests");
@@ -75,29 +80,26 @@ void GTestExecutable::runTest() {
 	//or run a test will block until we're done with what we're
 	//doing here.
 	processLock.lock();
-	setupExecutable();
-	QObject::connect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
-					 this, SLOT(parseTestResults(int, QProcess::ExitStatus)));
-	gtest->start(filePath, QStringList() << "--gtest_output=xml");
-	//unlock the processLock in the parseTestResults slot
-}
-
-void GTestExecutable::parseTestResults(int exitCode, QProcess::ExitStatus exitStatus) {
-	processLock.unlock();
-	if(exitStatus != QProcess::NormalExit)
-		return;
-
-	emit testResultsReady(this);
-}
-
-void GTestExecutable::setupExecutable() {
-	//Should we check and see if gtest is non-zero?
-	//if(gtest != 0) {}
 	gtest = new QProcess();
 	QObject::connect(gtest, SIGNAL(readyReadStandardOutput()),
 					 this, SLOT(standardOutputAvailable()));
 	QObject::connect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
-					 this, SLOT(executableFinished(int, QProcess::ExitStatus)));
+					 this, SLOT(parseTestResults(int, QProcess::ExitStatus)));
+	gtest->start(filePath, QStringList() << "--gtest_output=xml:./test_detail_1337.xml");
+	//unlock the processLock in the parseTestResults slot
+}
+
+void GTestExecutable::parseTestResults(int exitCode, QProcess::ExitStatus exitStatus) {
+	QObject::disconnect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
+						this, SLOT(parseTestResults(int, QProcess::ExitStatus)));
+	processLock.unlock();
+	if(exitStatus != QProcess::NormalExit)
+		return;
+	QFile xmlFile("./test_detail_1337.xml");
+	GTestParser parser(&xmlFile);
+	parser.parse();
+	executableFinished(exitCode, exitStatus);
+	emit testResultsReady(this);
 }
 
 void GTestExecutable::standardOutputAvailable() {

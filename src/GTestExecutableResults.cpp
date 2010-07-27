@@ -17,5 +17,5 @@
 #include "GTestExecutableResults.h"
 
 GTestExecutableResults::GTestExecutableResults(QString name)
-: exeName(name)
+: GTestCollectionResults(name)
 {}

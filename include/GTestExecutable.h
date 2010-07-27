@@ -53,7 +53,6 @@ private:
 	QProcess::ExitStatus exitStatus;
 	int exitCode;
 
-	void setupExecutable();
 	void runExecutable(QStringList args);
 	void readExecutableOutput(QBuffer& standardChannel);
 

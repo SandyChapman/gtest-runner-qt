@@ -14,6 +14,7 @@
  * Boston, MA 02111-1307 USA                                                                 *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <QDebug>
 #include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
 
@@ -25,23 +26,46 @@ GTestParser::GTestParser(QIODevice* inStream)
 {}
 
 void GTestParser::parse() {
+	xmlSource->open(QIODevice::ReadOnly);
+	xmlSource->seek(0);
 	QXmlStreamReader xmlStream(xmlSource);
 	QXmlStreamAttributes attributes;
-	GTestExecutableResults *testResults;
+	GTestExecutableResults* testExeResults;
+	GTestSuiteResults* testSuiteResults;
+	GTestResults* testResults;
 	while(!xmlStream.atEnd()) {
-		while(!xmlStream.readNextStartElement());
+		qDebug() << xmlStream.text();
+		while(!xmlStream.readNextStartElement() && !xmlStream.hasError() && !xmlStream.atEnd()) {
+			qDebug() << xmlStream.text();
+		}
+		qDebug() << xmlStream.text();
 		attributes = xmlStream.attributes();
-		if(xmlStream.name() == "testcase")
-			;
+		if(xmlStream.name() == "testcase") {
+			testResults = new GTestResults(attributes.value("name").toString());
+			testResults->setRunningTime(attributes.value("time").toString().toUInt());
+			testResults->setStatus(attributes.value("status").toString());
+			while((xmlStream.readNext(), xmlStream.name()) == "failure") {
+				attributes = xmlStream.attributes();
+				testResults->addFailureMessage(attributes.value("message").toString());
+			}
+		}
 		else if(xmlStream.name() == "testsuite") {
-
+			testSuiteResults = new GTestSuiteResults(attributes.value("name").toString());
+			testSuiteResults->setTestRunCount(attributes.value("tests").toString().toUInt());
+			testSuiteResults->setTestFailureCount(attributes.value("failures").toString().toUInt());
+			testSuiteResults->setTestErrorCount(attributes.value("errors").toString().toUInt());
+			testSuiteResults->setTestTotalTime(attributes.value("time").toString().toUInt());
+			testExeResults->addTestSuiteResults(testSuiteResults);
 		}
 		else if(xmlStream.name() == "testsuites") {
-			testResults = new GTestExecutableResults(attributes.value("name").toString());
-			testResults->setTestRunCount(attributes.value("tests").toString().toUInt());
-			testResults->setTestFailureCount(attributes.value("failures").toString().toUInt());
-			testResults->setTestErrorCount(attributes.value("errors").toString().toUInt());
-			testResults->setTestTotalTime(attributes.value("time").toString().toUInt());
+			testExeResults = new GTestExecutableResults(attributes.value("name").toString());
+			testExeResults->setTestRunCount(attributes.value("tests").toString().toUInt());
+			testExeResults->setTestFailureCount(attributes.value("failures").toString().toUInt());
+			testExeResults->setTestErrorCount(attributes.value("errors").toString().toUInt());
+			testExeResults->setTestTotalTime(attributes.value("time").toString().toUInt());
+		}
+		if(xmlStream.hasError()) {
+			qDebug() << xmlStream.errorString();
 		}
 	}
 }

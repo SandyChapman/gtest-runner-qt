@@ -17,56 +17,26 @@
 #ifndef GTESTEXECUTABLERESULTS_H_
 #define GTESTEXECUTABLERESULTS_H_
 
+#include <QList>
 #include <QString>
 
 #include "Defines.h"
+#include "GTestCollectionResults.h"
+#include "GTestSuiteResults.h"
 
-class GTestExecutableResults {
+class GTestExecutableResults : public GTestCollectionResults {
 
 private:
-	QString exeName;
-	uint numTests;
-	uint numFailures;
-	uint numErrors;
-	uint totalTime;
+	QList<GTestSuiteResults*> suiteResultsList;
 
 public:
 	GTestExecutableResults(QString name);
-	void setTestRunCount(uint count);
-	void setTestFailureCount(uint count);
-	void setTestErrorCount(uint count);
-	void setTestTotalTime(uint count);
-	uint getTestRunCount();
-	uint getTestFailureCount();
-	uint getTestErrorCount();
-	uint getTestTotalTime();
+	void addTestSuiteResults(GTestSuiteResults* testSuiteResults);
 
 };
 
-inline void GTestExecutableResults::setTestRunCount(uint count) {
-	numTests = count;
+inline void GTestExecutableResults::addTestSuiteResults(GTestSuiteResults* testSuiteResults) {
+	suiteResultsList.append(testSuiteResults);
 }
-
-inline void GTestExecutableResults::setTestFailureCount(uint count) {
-	numFailures = count;
-}
-
-inline void GTestExecutableResults::setTestErrorCount(uint count) {
-	numErrors = count;
-}
-
-inline void GTestExecutableResults::setTestTotalTime(uint count) {
-	totalTime = count;
-}
-
-inline uint GTestExecutableResults::getTestRunCount() { return numTests; }
-
-inline uint GTestExecutableResults::getTestFailureCount() { return numFailures; }
-
-inline uint GTestExecutableResults::getTestErrorCount() { return numErrors; }
-
-inline uint GTestExecutableResults::getTestTotalTime() { return totalTime; }
-
-inline QString GTestExecutableResults::getTestName() { return exeName; }
 
 #endif /* GTESTEXECUTABLERESULTS_H_ */
