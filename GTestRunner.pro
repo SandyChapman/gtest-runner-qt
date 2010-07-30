@@ -2,7 +2,8 @@ TEMPLATE = app
 TARGET = GTestRunner
 QT += core \
     gui
-HEADERS += include/GTestCollectionResults.h \
+HEADERS += include/GTestItem.h \
+    include/GTestCollectionResults.h \
     include/GTestSuiteResults.h \
     include/GTestResults.h \
     include/GTestSuite.h \

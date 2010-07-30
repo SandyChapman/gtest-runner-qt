@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * GTest.h - Created on 2010-07-25
+ * GTestSuiteResults.h - Created on 2010-07-27
  *
  * Copyright (C) 2010 Sandy Chapman
  *
@@ -14,41 +14,33 @@
  * Boston, MA 02111-1307 USA
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef GTEST_H_
-#define GTEST_H_
+#ifndef GTESTSUITERESULTS_H_
+#define GTESTSUITERESULTS_H_
 
-#include <QMetaType>
-#include <QObject>
+#include <QHash>
 #include <QString>
 
+#include "GTestCollectionResults.h"
 #include "GTestResults.h"
 
-class GTest : public QObject {
-
-Q_OBJECT
-
-public:
-	GTestResults* testResults;
+class GTestSuiteResults : public GTestCollectionResults {
 
 private:
-	QString name;
-
-signals:
-	void requestingRun(QString testName);
-	void testResultsReady();
+	QHash<QString, GTestResults*> testResultsHash;
 
 public:
-	GTest(QString name);
-	void run();
-	QString getName() const;
-	void receiveTestResults(GTestResults* testResults);
+	GTestSuiteResults(QString name);
+	void addTestResults(GTestResults* testResults);
+	GTestResults* getTestResults(QString testName);
 
 };
 
-Q_DECLARE_METATYPE(GTest*);
+inline void GTestSuiteResults::addTestResults(GTestResults* testResults) {
+	testResultsHash.insert(testResults->getName(), testResults);
+}
 
-inline void GTest::run() { emit requestingRun(name); }
+inline GTestResults* GTestSuiteResults::getTestResults(QString testName) {
+	return testResultsHash.value(testName);
+}
 
-inline QString GTest::getName() const { return name; }
-
-#endif /* GTEST_H_ */
+#endif /* GTESTSUITERESULTS_H_ */

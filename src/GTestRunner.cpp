@@ -212,19 +212,20 @@ void GTestRunner::updateListing(GTestExecutable* gtest) {
 
 	QTreeWidgetItem* topLevelItem = 0;
 	QTreeWidgetItem* newItem = 0;
-	GTestSuite* fixture = 0;
+	GTestSuite* suite = 0;
 	GTest* test = 0;
 	while(it != testList.end()) {
 		qDebug() << *it;
 		if(it->endsWith(".")) {
 			//drop the '.' and make it a data item
-			QString fixtureName = it->left(it->size()-1);
-			topLevelItem = new QTreeWidgetItem(testContainer, QStringList()<<fixtureName);
+			QString suiteName = it->left(it->size()-1);
+			topLevelItem = new QTreeWidgetItem(testContainer, QStringList()<<suiteName);
 			topLevelItem->setFlags(Qt::ItemIsTristate | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
 			topLevelItem->setCheckState(0, Qt::Checked);
-			fixture = new GTestSuite(fixtureName);
-			var.setValue<GTestSuite*>(fixture);
+			suite = new GTestSuite(suiteName);
+			var.setValue<GTestSuite*>(suite);
 			topLevelItem->setData(0,Qt::UserRole,var);
+			gtest->addTestSuite(suite);
 		}
 		else {
 			//drop the spaces and make it a data item
@@ -235,6 +236,7 @@ void GTestRunner::updateListing(GTestExecutable* gtest) {
 			test = new GTest(testName);
 			var.setValue<GTest*>(test);
 			newItem->setData(0,Qt::UserRole,var);
+			suite->addTest(test);
 		}
 		++it;
 	}
@@ -270,7 +272,17 @@ void GTestRunner::runTests() {
 	emit runningTests();
 }
 
-void GTestRunner::fillTestResults(GTestExecutable* gtest) {
+//TODO::Refactor the three copies of setTestResults to one function
+//TODO::The above will require a common base class, or a templated function
+void GTestRunner::setTestResult(GTest* gtest) {
+
+}
+
+void GTestRunner::setTestResult(GTest* gtest) {
+
+}
+
+void GTestRunner::setTestResult(GTest* gtest) {
 
 }
 

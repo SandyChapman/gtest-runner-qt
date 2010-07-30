@@ -97,7 +97,15 @@ void GTestExecutable::parseTestResults(int exitCode, QProcess::ExitStatus exitSt
 		return;
 	QFile xmlFile("./test_detail_1337.xml");
 	GTestParser parser(&xmlFile);
-	parser.parse();
+	testResults = parser.parse();
+	QList<GTestSuite*>::iterator it = runList.begin();
+	GTestSuiteResults* testSuiteResults;
+	while(it != runList.end()) {
+		testSuiteResults = testResults->getTestSuiteResults((*it)->getName());
+		(*it)->receiveTestResults(testSuiteResults);
+		++it;
+	}
+	runList.clear();
 	executableFinished(exitCode, exitStatus);
 	emit testResultsReady(this);
 }

@@ -29,7 +29,7 @@ private:
 
 public:
 	GTestParser(QIODevice *inStream);
-	void parse();
+	GTestExecutableResults* parse();
 
 
 };

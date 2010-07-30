@@ -25,7 +25,7 @@ GTestParser::GTestParser(QIODevice* inStream)
 : xmlSource(inStream)
 {}
 
-void GTestParser::parse() {
+GTestExecutableResults* GTestParser::parse() {
 	xmlSource->open(QIODevice::ReadOnly);
 	xmlSource->seek(0);
 	QXmlStreamReader xmlStream(xmlSource);
@@ -48,6 +48,7 @@ void GTestParser::parse() {
 				attributes = xmlStream.attributes();
 				testResults->addFailureMessage(attributes.value("message").toString());
 			}
+			testSuiteResults->addTestResults(testResults);
 		}
 		else if(xmlStream.name() == "testsuite") {
 			testSuiteResults = new GTestSuiteResults(attributes.value("name").toString());
@@ -68,4 +69,5 @@ void GTestParser::parse() {
 			qDebug() << xmlStream.errorString();
 		}
 	}
+	return testExeResults;
 }

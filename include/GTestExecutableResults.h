@@ -17,7 +17,7 @@
 #ifndef GTESTEXECUTABLERESULTS_H_
 #define GTESTEXECUTABLERESULTS_H_
 
-#include <QList>
+#include <QHash>
 #include <QString>
 
 #include "Defines.h"
@@ -27,16 +27,21 @@
 class GTestExecutableResults : public GTestCollectionResults {
 
 private:
-	QList<GTestSuiteResults*> suiteResultsList;
+	QHash<QString, GTestSuiteResults*> suiteResultsHash;
 
 public:
 	GTestExecutableResults(QString name);
 	void addTestSuiteResults(GTestSuiteResults* testSuiteResults);
+	GTestSuiteResults* getTestSuiteResults(QString testSuiteName);
 
 };
 
 inline void GTestExecutableResults::addTestSuiteResults(GTestSuiteResults* testSuiteResults) {
-	suiteResultsList.append(testSuiteResults);
+	suiteResultsHash.insert(testSuiteResults->getTestName(), testSuiteResults);
+}
+
+inline GTestSuiteResults* GTestExecutableResults::getTestSuiteResults(QString testSuiteName) {
+	return suiteResultsHash.value(testSuiteName);
 }
 
 #endif /* GTESTEXECUTABLERESULTS_H_ */

@@ -23,6 +23,7 @@
 #include <QMetaType>
 #include <QMutex>
 
+#include "GTestExecutableResults.h"
 #include "GTestSuite.h"
 
 class GTestExecutable : public QObject {
@@ -48,6 +49,7 @@ private:
 	QList<GTestSuite*> runList;
 	QStringList testsToRun;
 	bool runOnSignal;
+	GTestExecutableResults* testResults;
 
 	QProcess::ProcessError error;
 	QProcess::ExitStatus exitStatus;
@@ -89,8 +91,8 @@ public:
 
 //METHODS:
 	void produceListing();
-	void addTestCase(GTestSuite* testCase);
-	void removeTestCase(GTestSuite* testCase);
+	void addTestSuite(GTestSuite* testCase);
+	void removeTestSuite(GTestSuite* testCase);
 
 };
 
@@ -110,13 +112,13 @@ inline void GTestExecutable::setExecutablePath(QString executablePath) { this->f
 
 inline void GTestExecutable::setRunFlag(bool runOnSignal) { this->runOnSignal = runOnSignal; }
 
-inline void GTestExecutable::addTestCase(GTestSuite* testCase) {
-	QObject::connect(testCase, SIGNAL(requestRun(QString, QString)),
+inline void GTestExecutable::addTestSuite(GTestSuite* testCase) {
+	QObject::connect(testCase, SIGNAL(requestingRun(QString, QString)),
 					 this, SLOT(receiveRunRequest(QString, QString)));
 }
 
-inline void GTestExecutable::removeTestCase(GTestSuite* testCase) {
-	QObject::disconnect(testCase, SIGNAL(requestRun(QString, QString)),
+inline void GTestExecutable::removeTestSuite(GTestSuite* testCase) {
+	QObject::disconnect(testCase, SIGNAL(requestingRun(QString, QString)),
 					 this, SLOT(receiveRunRequest(QString, QString)));
 }
 

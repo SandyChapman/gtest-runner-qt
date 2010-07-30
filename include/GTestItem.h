@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * GTest.h - Created on 2010-07-25
+ * GTestItem.h - Created on 2010-07-29
  *
  * Copyright (C) 2010 Sandy Chapman
  *
@@ -14,41 +14,16 @@
  * Boston, MA 02111-1307 USA
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef GTEST_H_
-#define GTEST_H_
+#ifndef GTESTITEM_H_
+#define GTESTITEM_H_
 
-#include <QMetaType>
 #include <QObject>
-#include <QString>
 
-#include "GTestResults.h"
-
-class GTest : public QObject {
-
-Q_OBJECT
-
-public:
-	GTestResults* testResults;
+class GTestItem : public QObject {
 
 private:
 	QString name;
 
-signals:
-	void requestingRun(QString testName);
-	void testResultsReady();
-
-public:
-	GTest(QString name);
-	void run();
-	QString getName() const;
-	void receiveTestResults(GTestResults* testResults);
-
 };
 
-Q_DECLARE_METATYPE(GTest*);
-
-inline void GTest::run() { emit requestingRun(name); }
-
-inline QString GTest::getName() const { return name; }
-
-#endif /* GTEST_H_ */
+#endif /* GTESTITEM_H_ */

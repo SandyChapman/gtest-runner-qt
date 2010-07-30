@@ -15,12 +15,27 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "GTestSuite.h"
+#include "GTestResults.h"
 
 GTestSuite::GTestSuite(QString name)
-: name(name), runList()
+: name(name), runList(), testSuiteResults(0)
 {}
 
 void GTestSuite::receiveRunRequest(QString testName) {
 	runList.append((GTest*)QObject::sender());
-	emit requestRun(name, testName);
+	emit requestingRun(name, testName);
 }
+
+void GTestSuite::receiveTestResults(GTestSuiteResults* testSuiteResults) {
+	this->testSuiteResults = testSuiteResults;
+	QList<GTest*>::iterator it = runList.begin();
+	GTestResults* testResults;
+	while(it != runList.end()) {
+		testResults = testSuiteResults->getTestResults((*it)->getName());
+		(*it)->receiveTestResults(testResults);
+		++it;
+	}
+	runList.clear();
+	emit testResultsReady();
+}
+

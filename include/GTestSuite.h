@@ -22,6 +22,7 @@
 #include <QObject>
 
 #include "GTest.h"
+#include "GTestSuiteResults.h"
 
 class GTestSuite : public QObject {
 
@@ -30,10 +31,11 @@ Q_OBJECT
 private:
 	QString name;
 	QList<GTest*> runList;
+	GTestSuiteResults* testSuiteResults;
 
 signals:
-	void requestRun(QString caseName, QString testName);
-	void resultsReceived();
+	void requestingRun(QString caseName, QString testName);
+	void testResultsReady();
 
 public slots:
 	void receiveRunRequest(QString testName);
@@ -43,19 +45,24 @@ public:
 	void addTest(GTest* test);
 	void removeTest(GTest* test);
 	void run();
+	QString getName() const;
+	void receiveTestResults(GTestSuiteResults* testResults);
+	GTest* getTestResults(QString testName);
 
 };
 
 Q_DECLARE_METATYPE(GTestSuite*);
 
 inline void GTestSuite::addTest(GTest* test) {
-	QObject::connect(test, SIGNAL(requestRun(QString)),
+	QObject::connect(test, SIGNAL(requestingRun(QString)),
 					 this, SLOT(receiveRunRequest(QString)));
 }
 
 inline void GTestSuite::removeTest(GTest* test) {
-	QObject::disconnect(test, SIGNAL(requestRun(QString)),
+	QObject::disconnect(test, SIGNAL(requestingRun(QString)),
 					 this, SLOT(receiveRunRequest(QString)));
 }
+
+inline QString GTestSuite::getName() const { return name; }
 
 #endif /* GTESTFIXTURE_H_ */

@@ -18,6 +18,7 @@
 #define GTESTRUNNER_H
 
 #include <QFile>
+#include <QHash>
 #include <QList>
 #include <QMainWindow>
 #include <QMenu>

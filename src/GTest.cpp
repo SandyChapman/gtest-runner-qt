@@ -17,5 +17,13 @@
 #include "GTest.h"
 
 GTest::GTest(QString name)
-: name(name), state(NOT_RUN)
+: name(name), testResults(0)
 {}
+
+void GTest::receiveTestResults(GTestResults* testResults) {
+	this->testResults = testResults;
+	emit testResultsReady();
+}
+
+
+
