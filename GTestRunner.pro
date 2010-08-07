@@ -2,8 +2,9 @@ TEMPLATE = app
 TARGET = GTestRunner
 QT += core \
     gui
-HEADERS += include/GTestItem.h \
-    include/GTestCollectionResults.h \
+HEADERS += include/TestTreeWidgetItem.h \
+    include/TestTreeWidget.h \
+    include/GTestResultsItem.h \
     include/GTestSuiteResults.h \
     include/GTestResults.h \
     include/GTestSuite.h \
@@ -13,8 +14,9 @@ HEADERS += include/GTestItem.h \
     include/GTestExecutable.h \
     include/GTestParser.h \
     include/GTestRunner.h
-SOURCES += src/GTestResults.cpp \
-    src/GTestCollectionResults.cpp \
+SOURCES += src/TestTreeWidgetItem.cpp \
+    src/TestTreeWidget.cpp \
+    src/GTestResults.cpp \
     src/GTestSuiteResults.cpp \
     src/GTestSuite.cpp \
     src/GTestExecutableResults.cpp \

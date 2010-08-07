@@ -16,9 +16,13 @@
 
 #include "GTest.h"
 
-GTest::GTest(QString name)
-: name(name), testResults(0)
+GTest::GTest(QObject* parent, QString name)
+: QObject(parent), name(name)
 {}
+
+GTest::~GTest() {
+
+}
 
 void GTest::receiveTestResults(GTestResults* testResults) {
 	this->testResults = testResults;

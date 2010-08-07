@@ -19,3 +19,9 @@
 GTestResults::GTestResults(QString name)
 : name(name), time(-1), failureMessages(), status(UNDEFINED)
 {}
+
+GTestResults::~GTestResults() {
+
+}
+
+

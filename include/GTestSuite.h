@@ -24,31 +24,25 @@
 #include "GTest.h"
 #include "GTestSuiteResults.h"
 
-class GTestSuite : public QObject {
+class GTestSuite : public GTest {
 
 Q_OBJECT
 
-private:
-	QString name;
+protected:
 	QList<GTest*> runList;
-	GTestSuiteResults* testSuiteResults;
-
-signals:
-	void requestingRun(QString caseName, QString testName);
-	void testResultsReady();
 
 public slots:
-	void receiveRunRequest(QString testName);
+	virtual void receiveRunRequest(QString testName, QString testCase = QString());
 
 public:
-	GTestSuite(QString name);
+	GTestSuite(QObject* parent = 0, QString name = QString());
+	GTestSuite(const GTestSuite& other);
+	virtual ~GTestSuite();
 	void addTest(GTest* test);
 	void removeTest(GTest* test);
-	void run();
-	QString getName() const;
-	void receiveTestResults(GTestSuiteResults* testResults);
-	GTest* getTestResults(QString testName);
+	virtual void receiveTestResults(GTestResults* testSuiteResults);
 
+	virtual void run();
 };
 
 Q_DECLARE_METATYPE(GTestSuite*);
@@ -63,6 +57,5 @@ inline void GTestSuite::removeTest(GTest* test) {
 					 this, SLOT(receiveRunRequest(QString)));
 }
 
-inline QString GTestSuite::getName() const { return name; }
 
 #endif /* GTESTFIXTURE_H_ */

@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * GTestExecutableResults.h - Created on 2010-07-26
+ * TestTreeWidget.cpp - Created on 2010-08-07
  *
  * Copyright (C) 2010 Sandy Chapman
  *
@@ -14,22 +14,43 @@
  * Boston, MA 02111-1307 USA
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef GTESTEXECUTABLERESULTS_H_
-#define GTESTEXECUTABLERESULTS_H_
+#include "TestTreeWidget.h"
+#include "GTestSuite.h"
+#include "GTestExecutable.h"
+
+TestTreeWidget::TestTreeWidget(QWidget* parent)
+: QTreeWidget(parent)
+{}
+
+TestTreeWidget::~TestTreeWidget()
+{}
+
+void TestTreeWidget::populateTestResult(QObject* item) {
+	TestTreeWidgetItem* treeItem = static_cast<TestTreeWidgetItem*>(item);
+	if(treeItem == 0)
+		return; //TODO:: exception management stuff here
+
+	QVariant var = treeItem->data(0,Qt::UserRole);
+	GTest* testItem = var.value<GTest*>();
+	if(testItem == 0) {
+		testItem = var.value<GTestSuite*>();
+		if(testItem == 0) {
+			testItem = var.value<GTestExecutable*>();
+			if(testItem == 0)
+				return;
+		}
+	}
+
+	const GTestResults* testResults = testItem->getTestResults();
+	if(testResults == 0)
+		return;
+
+	if(testResults->getFailureCount() == 0)
+		treeItem->setBackgroundColor(0,Qt::green);
+	else
+		treeItem->setBackgroundColor(0,Qt::red);
+}
 
 
-#include <QHash>
-#include <QString>
 
-#include "Defines.h"
-#include "GTestSuiteResults.h"
 
-class GTestExecutableResults : public GTestSuiteResults {
-
-public:
-	GTestExecutableResults(QString name);
-	virtual ~GTestExecutableResults();
-
-};
-
-#endif /* GTESTEXECUTABLERESULTS_H_ */

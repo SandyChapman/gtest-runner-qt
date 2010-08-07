@@ -15,12 +15,14 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "GTestRunner.h"
+#include "TestTreeWidgetItem.h"
 
 #include <QAction>
 #include <QDebug>
 #include <QFileDialog>
 #include <QGroupBox>
 #include <QMessageBox>
+#include <QSignalMapper>
 #include <QTreeWidgetItem>
 #include <QTreeWidgetItemIterator>
 #include <QVBoxLayout>
@@ -199,19 +201,24 @@ void GTestRunner::updateListing(GTestExecutable* gtest) {
 	qDebug() << "Retrieved listing. Size ="<<testList.size();
 	QStringList::iterator it = testList.begin();
 
-	QTreeWidgetItem* testContainer = new QTreeWidgetItem(&testTree,QStringList() << exePath);
+
+	TestTreeWidgetItem* testContainer = new TestTreeWidgetItem(&testTree,QStringList() << exePath);
 	testContainer->setFlags(Qt::ItemIsTristate | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
 	testContainer->setCheckState(0, Qt::Checked);
 	QVariant var;
 	var.setValue<GTestExecutable*>(gtest);
 	testContainer->setData(0,Qt::UserRole,var);
 	QObject::connect(this, SIGNAL(aboutToRunTests()),
-					 gtest, SLOT(setRunFlag(false)));
+					 gtest, SLOT(resetRunState()));
 	QObject::connect(this, SIGNAL(runningTests()),
 					 gtest, SLOT(runTest()));
+	QSignalMapper* signalMap = new QSignalMapper(&testTree);
+	signalMap->setMapping(gtest, testContainer);
+	QObject::connect(gtest, SIGNAL(testResultsReady()),
+					 signalMap, SLOT(map()));
 
-	QTreeWidgetItem* topLevelItem = 0;
-	QTreeWidgetItem* newItem = 0;
+	TestTreeWidgetItem* topLevelItem = 0;
+	TestTreeWidgetItem* newItem = 0;
 	GTestSuite* suite = 0;
 	GTest* test = 0;
 	while(it != testList.end()) {
@@ -219,27 +226,37 @@ void GTestRunner::updateListing(GTestExecutable* gtest) {
 		if(it->endsWith(".")) {
 			//drop the '.' and make it a data item
 			QString suiteName = it->left(it->size()-1);
-			topLevelItem = new QTreeWidgetItem(testContainer, QStringList()<<suiteName);
+			topLevelItem = new TestTreeWidgetItem(testContainer, QStringList()<<suiteName);
 			topLevelItem->setFlags(Qt::ItemIsTristate | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
 			topLevelItem->setCheckState(0, Qt::Checked);
-			suite = new GTestSuite(suiteName);
+			suite = new GTestSuite(gtest, suiteName);
 			var.setValue<GTestSuite*>(suite);
 			topLevelItem->setData(0,Qt::UserRole,var);
-			gtest->addTestSuite(suite);
+			gtest->addTest(suite);
+
+			signalMap->setMapping(suite, topLevelItem);
+			QObject::connect(suite, SIGNAL(testResultsReady()),
+							 signalMap, SLOT(map()));
 		}
 		else {
 			//drop the spaces and make it a data item
 			QString testName = it->right(it->size()-2);
-			newItem = new QTreeWidgetItem(topLevelItem, QStringList()<<testName);
+			newItem = new TestTreeWidgetItem(topLevelItem, QStringList()<<testName);
 			newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
 			newItem->setCheckState(0,Qt::Checked);
-			test = new GTest(testName);
+			test = new GTest(suite, testName);
 			var.setValue<GTest*>(test);
 			newItem->setData(0,Qt::UserRole,var);
 			suite->addTest(test);
+
+			signalMap->setMapping(test, newItem);
+			QObject::connect(test, SIGNAL(testResultsReady()),
+							 signalMap, SLOT(map()));
 		}
 		++it;
 	}
+	QObject::connect(signalMap, SIGNAL(mapped(QObject*)),
+					 &testTree, SLOT(populateTestResult(QObject*)));
 }
 
 void GTestRunner::updateAllListings() {
@@ -261,8 +278,8 @@ void GTestRunner::runTests() {
 			continue;
 		GTestExecutable* gtest = topLevelItem->data(0,Qt::UserRole).value<GTestExecutable*>();
 		if(gtest != 0 && gtest->getState() == GTestExecutable::VALID) {
-			QObject::connect(gtest, SIGNAL(testResultsReady(GTestExecutable*)),
-							 this, SLOT(fillTestResults(GTestExecutable*)));
+			//QObject::connect(gtest, SIGNAL(testResultsReady(GTest*)),
+			//				 this, SLOT(fillTestResults(GTestExecutable*)));
 			gtest->setRunFlag(true);
 		}
 		else
@@ -274,16 +291,7 @@ void GTestRunner::runTests() {
 
 //TODO::Refactor the three copies of setTestResults to one function
 //TODO::The above will require a common base class, or a templated function
-void GTestRunner::setTestResult(GTest* gtest) {
-
-}
-
-void GTestRunner::setTestResult(GTest* gtest) {
-
-}
-
-void GTestRunner::setTestResult(GTest* gtest) {
-
+void GTestRunner::setTestResult(GTest* /*gtest*/) {
 }
 
 /*
@@ -294,7 +302,7 @@ void GTestRunner::setTestResult(GTest* gtest) {
  *	part checked, we know that we did not in fact click on the parent
  *	(and thus we can immediately return), so a part checked parent is fine.
  */
-void GTestRunner::treeItemClicked(QTreeWidgetItem* item, int column) {
+void GTestRunner::treeItemClicked(QTreeWidgetItem* item, int /*column*/) {
 	if(item->childCount() == 0 || item->parent() == 0)
 		return;
 	if(item->checkState(0) ==Qt::PartiallyChecked) {

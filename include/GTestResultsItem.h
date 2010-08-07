@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * GTestExecutableResults.h - Created on 2010-07-26
+ * GTestResultItem.h - Created on 2010-07-29
  *
  * Copyright (C) 2010 Sandy Chapman
  *
@@ -14,22 +14,11 @@
  * Boston, MA 02111-1307 USA
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef GTESTEXECUTABLERESULTS_H_
-#define GTESTEXECUTABLERESULTS_H_
+#ifndef GTESTRESULTITEM_H_
+#define GTESTRESULTITEM_H_
 
-
-#include <QHash>
-#include <QString>
-
-#include "Defines.h"
-#include "GTestSuiteResults.h"
-
-class GTestExecutableResults : public GTestSuiteResults {
-
-public:
-	GTestExecutableResults(QString name);
-	virtual ~GTestExecutableResults();
+class GTestResultsItem {
 
 };
 
-#endif /* GTESTEXECUTABLERESULTS_H_ */
+#endif /* GTESTRESULTITEM_H_ */

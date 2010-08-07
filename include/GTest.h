@@ -27,21 +27,23 @@ class GTest : public QObject {
 
 Q_OBJECT
 
-public:
+protected:
+	QString name;
 	GTestResults* testResults;
 
-private:
-	QString name;
-
 signals:
-	void requestingRun(QString testName);
+	void requestingRun(QString testName, QString caseName = QString());
 	void testResultsReady();
 
 public:
-	GTest(QString name);
-	void run();
+	GTest(QObject* parent = 0, QString name = QString());
+	GTest(const GTest& other);
+	virtual ~GTest();
 	QString getName() const;
-	void receiveTestResults(GTestResults* testResults);
+	const GTestResults* getTestResults() const;
+
+	virtual void receiveTestResults(GTestResults* testResults);
+	virtual void run();
 
 };
 
@@ -50,5 +52,7 @@ Q_DECLARE_METATYPE(GTest*);
 inline void GTest::run() { emit requestingRun(name); }
 
 inline QString GTest::getName() const { return name; }
+
+inline const GTestResults* GTest::getTestResults() const { return testResults; }
 
 #endif /* GTEST_H_ */

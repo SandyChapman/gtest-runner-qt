@@ -22,16 +22,17 @@
 #include <QMessageBox>
 
 GTestExecutable::GTestExecutable(QObject* parent, QString filePath)
-: QObject(parent), filePath(filePath), state(VALID), processLock(),
-  gtest(0), outputLock(), standardOutput(), standardError(), runOnSignal(false)
+: GTestSuite(parent, filePath), state(VALID), processLock(),
+  outputLock(), gtest(0), standardOutput(), standardError(),
+  listing(), testsToRun(), runOnSignal(false)
 {
 	getState();
 }
 
 GTestExecutable::GTestExecutable(const GTestExecutable& other)
-: QObject(other.parent()),filePath(other.filePath), state(other.state),
-  processLock(), gtest(0), outputLock(), standardOutput(),
-  standardError()
+: GTestSuite(other.parent(), other.name), state(other.state),
+  processLock(), outputLock(), gtest(0), standardOutput(),
+  standardError(), listing(), testsToRun(), runOnSignal(false)
 {
 	getState();
 }
@@ -52,7 +53,7 @@ void GTestExecutable::produceListing() {
 					 this, SLOT(executableFinished(int, QProcess::ExitStatus)));
 	QObject::connect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
 					 this, SLOT(parseListing(int, QProcess::ExitStatus)));
-	gtest->start(filePath, QStringList() << "--gtest_list_tests");
+	gtest->start(name, QStringList() << "--gtest_list_tests");
 	//unlock the processLock in the parseListing slot
 }
 
@@ -85,7 +86,7 @@ void GTestExecutable::runTest() {
 					 this, SLOT(standardOutputAvailable()));
 	QObject::connect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
 					 this, SLOT(parseTestResults(int, QProcess::ExitStatus)));
-	gtest->start(filePath, QStringList() << "--gtest_output=xml:./test_detail_1337.xml");
+	gtest->start(name, QStringList() << "--gtest_output=xml:./test_detail_1337.xml");
 	//unlock the processLock in the parseTestResults slot
 }
 
@@ -97,17 +98,18 @@ void GTestExecutable::parseTestResults(int exitCode, QProcess::ExitStatus exitSt
 		return;
 	QFile xmlFile("./test_detail_1337.xml");
 	GTestParser parser(&xmlFile);
-	testResults = parser.parse();
-	QList<GTestSuite*>::iterator it = runList.begin();
-	GTestSuiteResults* testSuiteResults;
-	while(it != runList.end()) {
-		testSuiteResults = testResults->getTestSuiteResults((*it)->getName());
+	GTestExecutableResults* testResults = parser.parse();
+	this->testResults = testResults;
+	QList<GTest*>::iterator it = this->runList.begin();
+	GTestResults* testSuiteResults;
+	while(it != this->runList.end()) {
+		testSuiteResults = testResults->getTestResults((*it)->getName());
 		(*it)->receiveTestResults(testSuiteResults);
 		++it;
 	}
 	runList.clear();
 	executableFinished(exitCode, exitStatus);
-	emit testResultsReady(this);
+	emit testResultsReady();
 }
 
 void GTestExecutable::standardOutputAvailable() {
@@ -167,7 +169,7 @@ void GTestExecutable::executableFinished(int exitCode, QProcess::ExitStatus exit
 
 GTestExecutable::STATE GTestExecutable::getState() {
 	state = VALID;
-	QFile file(filePath);
+	QFile file(name);
 	if(!file.exists()) {
 		state = FILE_NOT_FOUND;
 	}
@@ -177,8 +179,4 @@ GTestExecutable::STATE GTestExecutable::getState() {
 	return state;
 }
 
-void GTestExecutable::receiveRunRequest(QString caseName, QString testName) {
-	runList.append((GTestSuite*)QObject::sender());
-	testsToRun << caseName.append(".").append(testName);
-}
 

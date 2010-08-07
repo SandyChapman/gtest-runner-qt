@@ -31,6 +31,7 @@
 #include <QTreeWidget>
 
 #include "GTestExecutable.h"
+#include "TestTreeWidget.h"
 
 class GTestRunner : public QMainWindow
 {
@@ -48,11 +49,8 @@ public slots:
 	void addTests();
 	void updateAllListings();
 	void runTests();
-
 	void updateListing(GTestExecutable* gtest);
-
-	void fillTestResults(GTestExecutable* gtest);
-
+	void setTestResult(GTest* gtest);
 	void treeItemClicked(QTreeWidgetItem* item, int column);
 
 private:
@@ -63,7 +61,7 @@ private:
 
 	QWidget centralWidget;
 	QToolBar testTreeTools;
-	QTreeWidget testTree;
+	TestTreeWidget testTree;
 
 	QList<GTestExecutable*> gtestList;
 

@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * GTestExecutableResults.h - Created on 2010-07-26
+ * TestTreeWidgetItem.cpp - Created on 2010-08-07
  *
  * Copyright (C) 2010 Sandy Chapman
  *
@@ -14,22 +14,16 @@
  * Boston, MA 02111-1307 USA
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#ifndef GTESTEXECUTABLERESULTS_H_
-#define GTESTEXECUTABLERESULTS_H_
+#include "TestTreeWidgetItem.h"
 
 
-#include <QHash>
-#include <QString>
+TestTreeWidgetItem::TestTreeWidgetItem(QTreeWidget* parent, const QStringList& strings, int type)
+: QObject(), QTreeWidgetItem(parent, strings, type)
+{}
 
-#include "Defines.h"
-#include "GTestSuiteResults.h"
+TestTreeWidgetItem::TestTreeWidgetItem(QTreeWidgetItem* parent, const QStringList& strings, int type)
+: QObject(), QTreeWidgetItem(parent, strings, type)
+{}
 
-class GTestExecutableResults : public GTestSuiteResults {
-
-public:
-	GTestExecutableResults(QString name);
-	virtual ~GTestExecutableResults();
-
-};
-
-#endif /* GTESTEXECUTABLERESULTS_H_ */
+TestTreeWidgetItem::~TestTreeWidgetItem()
+{}

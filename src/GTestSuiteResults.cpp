@@ -17,6 +17,12 @@
 #include "GTestSuiteResults.h"
 
 GTestSuiteResults::GTestSuiteResults(QString name)
-: GTestCollectionResults(name)
+: GTestResults(name)
 {}
+
+GTestSuiteResults::~GTestSuiteResults() {
+
+}
+
+
 

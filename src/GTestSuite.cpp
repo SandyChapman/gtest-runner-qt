@@ -17,17 +17,28 @@
 #include "GTestSuite.h"
 #include "GTestResults.h"
 
-GTestSuite::GTestSuite(QString name)
-: name(name), runList(), testSuiteResults(0)
+GTestSuite::GTestSuite(QObject* parent, QString name)
+: GTest(parent, name), runList()
 {}
 
-void GTestSuite::receiveRunRequest(QString testName) {
-	runList.append((GTest*)QObject::sender());
-	emit requestingRun(name, testName);
+GTestSuite::GTestSuite(const GTestSuite& other)
+: GTest(other.parent(), other.name), runList()
+{}
+
+GTestSuite::~GTestSuite() {
+
 }
 
-void GTestSuite::receiveTestResults(GTestSuiteResults* testSuiteResults) {
-	this->testSuiteResults = testSuiteResults;
+void GTestSuite::receiveRunRequest(QString testName, QString testCase) {
+	GTest* test = static_cast<GTest*>(QObject::sender());
+	if(!runList.contains(test))
+		runList.append(test);
+	if(testCase.isEmpty())
+		emit requestingRun(name, testName);
+}
+
+void GTestSuite::receiveTestResults(GTestResults* testSuiteResults) {
+	this->testResults = testSuiteResults;
 	QList<GTest*>::iterator it = runList.begin();
 	GTestResults* testResults;
 	while(it != runList.end()) {
@@ -37,5 +48,9 @@ void GTestSuite::receiveTestResults(GTestSuiteResults* testSuiteResults) {
 	}
 	runList.clear();
 	emit testResultsReady();
+}
+
+void GTestSuite::run() {
+	//TODO::Run all tests in suite
 }
 

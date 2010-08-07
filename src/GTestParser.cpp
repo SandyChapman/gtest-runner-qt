@@ -52,18 +52,18 @@ GTestExecutableResults* GTestParser::parse() {
 		}
 		else if(xmlStream.name() == "testsuite") {
 			testSuiteResults = new GTestSuiteResults(attributes.value("name").toString());
-			testSuiteResults->setTestRunCount(attributes.value("tests").toString().toUInt());
-			testSuiteResults->setTestFailureCount(attributes.value("failures").toString().toUInt());
-			testSuiteResults->setTestErrorCount(attributes.value("errors").toString().toUInt());
-			testSuiteResults->setTestTotalTime(attributes.value("time").toString().toUInt());
-			testExeResults->addTestSuiteResults(testSuiteResults);
+			testSuiteResults->setRunCount(attributes.value("tests").toString().toUInt());
+			testSuiteResults->setFailureCount(attributes.value("failures").toString().toUInt());
+			testSuiteResults->setErrorCount(attributes.value("errors").toString().toUInt());
+			testSuiteResults->setRunningTime(attributes.value("time").toString().toUInt());
+			testExeResults->addTestResults(testSuiteResults);
 		}
 		else if(xmlStream.name() == "testsuites") {
 			testExeResults = new GTestExecutableResults(attributes.value("name").toString());
-			testExeResults->setTestRunCount(attributes.value("tests").toString().toUInt());
-			testExeResults->setTestFailureCount(attributes.value("failures").toString().toUInt());
-			testExeResults->setTestErrorCount(attributes.value("errors").toString().toUInt());
-			testExeResults->setTestTotalTime(attributes.value("time").toString().toUInt());
+			testExeResults->setRunCount(attributes.value("tests").toString().toUInt());
+			testExeResults->setFailureCount(attributes.value("failures").toString().toUInt());
+			testExeResults->setErrorCount(attributes.value("errors").toString().toUInt());
+			testExeResults->setRunningTime(attributes.value("time").toString().toUInt());
 		}
 		if(xmlStream.hasError()) {
 			qDebug() << xmlStream.errorString();

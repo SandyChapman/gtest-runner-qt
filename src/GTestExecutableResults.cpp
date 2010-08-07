@@ -17,10 +17,12 @@
 #include "GTestExecutableResults.h"
 
 GTestExecutableResults::GTestExecutableResults(QString name)
-: GTestCollectionResults(name), suiteResultsHash()
+: GTestSuiteResults(name)
 {}
 
+GTestExecutableResults::~GTestExecutableResults() {
 
+}
 
 
 

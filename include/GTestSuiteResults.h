@@ -20,27 +20,49 @@
 #include <QHash>
 #include <QString>
 
-#include "GTestCollectionResults.h"
 #include "GTestResults.h"
 
-class GTestSuiteResults : public GTestCollectionResults {
+class GTestSuiteResults : public GTestResults {
 
-private:
+protected:
 	QHash<QString, GTestResults*> testResultsHash;
+	uint errorCount;
+	uint failureCount;
+	uint runCount;
 
 public:
 	GTestSuiteResults(QString name);
-	void addTestResults(GTestResults* testResults);
-	GTestResults* getTestResults(QString testName);
+	virtual ~GTestSuiteResults();
 
+	void addTestResults(GTestResults* testResults);
+	void setErrorCount(uint errorCount);
+	void setFailureCount(uint failureCount);
+	void setRunCount(uint runCount);
+
+	GTestResults* getTestResults(QString testName);
+	uint getErrorCount() const;
+	virtual uint getFailureCount() const;
+	uint getRunCount() const;
 };
 
 inline void GTestSuiteResults::addTestResults(GTestResults* testResults) {
 	testResultsHash.insert(testResults->getName(), testResults);
 }
 
+inline void GTestSuiteResults::setErrorCount(uint errorCount) { this->errorCount = errorCount; }
+
+inline void GTestSuiteResults::setFailureCount(uint failureCount) { this->failureCount = failureCount; }
+
+inline void GTestSuiteResults::setRunCount(uint runCount) { this->runCount = runCount; }
+
 inline GTestResults* GTestSuiteResults::getTestResults(QString testName) {
 	return testResultsHash.value(testName);
 }
+
+inline uint GTestSuiteResults::getErrorCount() const { return errorCount; }
+
+inline uint GTestSuiteResults::getFailureCount() const { return failureCount; }
+
+inline uint GTestSuiteResults::getRunCount() const { return runCount; }
 
 #endif /* GTESTSUITERESULTS_H_ */

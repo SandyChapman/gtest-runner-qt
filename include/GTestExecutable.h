@@ -26,7 +26,7 @@
 #include "GTestExecutableResults.h"
 #include "GTestSuite.h"
 
-class GTestExecutable : public QObject {
+class GTestExecutable : public GTestSuite {
 
 Q_OBJECT
 
@@ -38,18 +38,15 @@ public:
 	};
 
 private:
-	QString filePath;
 	STATE state;
 	QMutex processLock;
-	QProcess *gtest;
 	QMutex outputLock;
+	QProcess *gtest;
 	QBuffer standardOutput;
 	QBuffer standardError;
 	QStringList listing;
-	QList<GTestSuite*> runList;
 	QStringList testsToRun;
 	bool runOnSignal;
-	GTestExecutableResults* testResults;
 
 	QProcess::ProcessError error;
 	QProcess::ExitStatus exitStatus;
@@ -60,7 +57,6 @@ private:
 
 signals:
 	void listingReady(GTestExecutable* sender);
-	void testResultsReady(GTestExecutable* sender);
 
 public slots:
 	void standardErrorAvailable();
@@ -69,13 +65,13 @@ public slots:
 	void runTest();
 	void parseListing(int exitCode, QProcess::ExitStatus exitStatus);
 	void parseTestResults(int exitCode, QProcess::ExitStatus exitStatus);
-	void receiveRunRequest(QString testCase, QString testName);
+	void resetRunState();
 
 public:
 
 	GTestExecutable(QObject* parent = 0, QString executablePath = QString());
 	GTestExecutable(const GTestExecutable& other);
-	~GTestExecutable();
+	virtual ~GTestExecutable();
 
 //GETS:
 	QProcess::ProcessError getError() const;
@@ -91,8 +87,6 @@ public:
 
 //METHODS:
 	void produceListing();
-	void addTestSuite(GTestSuite* testCase);
-	void removeTestSuite(GTestSuite* testCase);
 
 };
 
@@ -100,7 +94,7 @@ Q_DECLARE_METATYPE(GTestExecutable*);
 
 inline QStringList GTestExecutable::getListing() const { return listing; }
 
-inline QString GTestExecutable::getExecutablePath() const { return filePath; }
+inline QString GTestExecutable::getExecutablePath() const { return name; }
 
 inline QProcess::ProcessError GTestExecutable::getError() const { return error; }
 
@@ -108,18 +102,10 @@ inline QProcess::ExitStatus GTestExecutable::getExitStatus() const { return exit
 
 inline int GTestExecutable::getExitCode() const { return exitCode; }
 
-inline void GTestExecutable::setExecutablePath(QString executablePath) { this->filePath = executablePath; }
+inline void GTestExecutable::setExecutablePath(QString executablePath) { this->name = executablePath; }
 
 inline void GTestExecutable::setRunFlag(bool runOnSignal) { this->runOnSignal = runOnSignal; }
 
-inline void GTestExecutable::addTestSuite(GTestSuite* testCase) {
-	QObject::connect(testCase, SIGNAL(requestingRun(QString, QString)),
-					 this, SLOT(receiveRunRequest(QString, QString)));
-}
-
-inline void GTestExecutable::removeTestSuite(GTestSuite* testCase) {
-	QObject::disconnect(testCase, SIGNAL(requestingRun(QString, QString)),
-					 this, SLOT(receiveRunRequest(QString, QString)));
-}
+inline void GTestExecutable::resetRunState() { setRunFlag(false); }
 
 #endif /* GTESTEXECUTABLE_H_ */

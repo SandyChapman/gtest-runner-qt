@@ -27,7 +27,12 @@ public:
 		UNDEFINED
 	};
 
-private:
+	enum OUTCOME {
+		PASSED,
+		FAILED
+	};
+
+protected:
 	QString name;
 	uint time;
 	QStringList failureMessages;
@@ -35,15 +40,20 @@ private:
 
 public:
 	GTestResults(QString name);
+	virtual ~GTestResults();
+
 	void setStatus(QString status);
 	void setRunningTime(uint runTime);
 	void addFailureMessage(QString failureMsg);
+
 	STATUS getStatus() const;
 	QString getName() const;
 	uint getRunningTime() const;
-	uint getFailureMessageCount() const;
+	virtual uint getFailureCount() const;
 	QString getFailureMessage(uint num) const;
 	QStringList getFailureMessages() const;
+
+	virtual GTestResults* getTestResults(QString name);
 
 };
 
@@ -70,7 +80,7 @@ inline uint GTestResults::getRunningTime() const {
 	return time;
 }
 
-inline uint GTestResults::getFailureMessageCount() const {
+inline uint GTestResults::getFailureCount() const {
 	return failureMessages.size();
 }
 
@@ -81,5 +91,7 @@ inline QString GTestResults::getFailureMessage(uint num) const {
 inline QStringList GTestResults::getFailureMessages() const {
 	return failureMessages;
 }
+
+inline GTestResults* GTestResults::getTestResults(QString name) { return (name == this->name ? this : 0); }
 
 #endif /* GTESTRESULTS_H_ */
