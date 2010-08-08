@@ -24,19 +24,29 @@
 #include "GTest.h"
 #include "GTestSuiteResults.h"
 
+/*! \brief This class logically represents a suite of unit tests.
+ *
+ * This class attempts to mirror what an actual unit test suite is comprised of.
+ * For example, it extends the concept of a unit test in that it has both a name and a result.
+ * However, it differs in that a suite holds a collection of individual unit tests.
+ * Thus, this structure is reflected in objects of this type are hold GTests
+ * and is held by a GTestExecutable object.
+ */
 class GTestSuite : public GTest {
 
 Q_OBJECT
 
 protected:
-	QList<GTest*> runList;
+	QList<GTest*> runList; /*! The list of GTests that have requested to be run.
+							*  This list is maintained so as to increase the efficiency
+							*  with which test result objects can be disseminated.
+							*/
 
 public slots:
 	virtual void receiveRunRequest(QString testName, QString testCase = QString());
 
 public:
 	GTestSuite(QObject* parent = 0, QString name = QString());
-	GTestSuite(const GTestSuite& other);
 	virtual ~GTestSuite();
 	void addTest(GTest* test);
 	void removeTest(GTest* test);
@@ -47,11 +57,22 @@ public:
 
 Q_DECLARE_METATYPE(GTestSuite*);
 
+/*! \brief Adds a test to the suite of tests.
+ *
+ * This method sets up the signal/slot relation between this GTestSuite
+ * and the added GTest. Thus, when a GTest requests to be run through a signal,
+ * this GTestSuite can received the signal, add the GTest to its run list, and
+ * propagate the signal to the GTestExecutable for running.
+ */
 inline void GTestSuite::addTest(GTest* test) {
 	QObject::connect(test, SIGNAL(requestingRun(QString)),
 					 this, SLOT(receiveRunRequest(QString)));
 }
 
+/*! \brief Removes a test from the GTestSuite object.
+ *
+ * This dismantles the signal/slot relation set up in addTest.
+ */
 inline void GTestSuite::removeTest(GTest* test) {
 	QObject::disconnect(test, SIGNAL(requestingRun(QString)),
 					 this, SLOT(receiveRunRequest(QString)));

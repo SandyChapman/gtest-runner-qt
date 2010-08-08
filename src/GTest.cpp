@@ -16,14 +16,30 @@
 
 #include "GTest.h"
 
+/*! \brief Constructor
+ *
+ * \param parent A pointer to the parent object. This should be a GTestSuite.
+ * \param name The name of the unit test. If called directly, this should be
+ * 			   the value \em testName in \code GTEST(testCase, testName) \endcode
+ */
 GTest::GTest(QObject* parent, QString name)
-: QObject(parent), name(name)
+: QObject(parent), name(name), testResults(0)
 {}
 
+/*! \bried Destructor
+ *
+ * Deletes the testResult object if it exists.
+ */
 GTest::~GTest() {
-
+	if(testResults)
+		delete testResults;
 }
 
+/*! \brief Receives a test result object from a GTestSuite object.
+ *
+ * \param testResults The test result object, or 0 if there was
+ * 					  an error in processing.
+ */
 void GTest::receiveTestResults(GTestResults* testResults) {
 	this->testResults = testResults;
 	emit testResultsReady();

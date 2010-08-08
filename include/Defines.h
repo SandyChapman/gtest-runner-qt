@@ -14,6 +14,11 @@
  * Boston, MA 02111-1307 USA
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+/*! \file
+ * This file contains all the MACRO and typedef definitions that are used
+ * throughout the project.
+ */
+
 #ifndef DEFINES_H_
 #define DEFINES_H_
 
