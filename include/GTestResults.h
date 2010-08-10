@@ -19,24 +19,35 @@
 
 #include <QStringList>
 
+/* \brief This class logically represents the results of running a unit test.
+ *
+ * The class is the analogue to a gtest unit test result. It consists of the name of
+ * the test (which is used to assign the result to the correct GTest), the running
+ * time of the test, any failure messages that were produced and a summary result
+ * status (pass/fail). In the subclasses, these variables also apply, but differ
+ * in that a GTestSuiteResults comprises the results of all tests within the suite.
+ */
 class GTestResults {
 
 public:
+	//! The run status of the GTest.
 	enum STATUS {
-		RUN,
-		UNDEFINED
+		RUN,		//!< The test was run.
+		//! \TODO TODO::Investigate other run status of a GTest.
+		UNDEFINED	//!< Currently not sure what the other possibilities are.
 	};
 
+	//! The outcome of the running of the test.
 	enum OUTCOME {
-		PASSED,
-		FAILED
+		PASSED,		//The test passed.
+		FAILED		//The test has at least one failure.
 	};
 
 protected:
-	QString name;
-	uint time;
-	QStringList failureMessages;
-	STATUS status;
+	QString name;	//!< The name of the GTest that corresponds to this result.
+	uint time;		//!< The time it took to run this test (or suite of tests).
+	QStringList failureMessages;	//!< The list of failure messages --unparsed.
+	STATUS status;	//!< The run status of the unit test \see GTestResults::STATUS
 
 public:
 	GTestResults(QString name);

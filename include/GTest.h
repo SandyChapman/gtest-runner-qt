@@ -24,7 +24,7 @@
 #include "GTestResults.h"
 
 
-/*! \brief The class logically represents a single unit test.
+/*! \brief This class logically represents a single unit test.
  *
  * This class attempts to mirror what an actual unit test is comprised of.
  * For example, it contains a name and a result and the varying methods

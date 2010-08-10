@@ -4,7 +4,6 @@ QT += core \
     gui
 HEADERS += include/TestTreeWidgetItem.h \
     include/TestTreeWidget.h \
-    include/GTestResultsItem.h \
     include/GTestSuiteResults.h \
     include/GTestResults.h \
     include/GTestSuite.h \

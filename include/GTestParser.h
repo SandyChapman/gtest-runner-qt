@@ -22,15 +22,21 @@
 
 #include "GTestExecutableResults.h"
 
+/*! \brief This class parses an .xml file outputted by a gtest executable.
+ *
+ * This parser takes a generic QIODevice and parses the results out of it.
+ * The iodevice enables a user to pass anything from a file handle (QFile)
+ * to a buffer (QBuffer). The parsed results are returned as a tree of
+ * GTestResults objects.
+ */
 class GTestParser {
 
 private:
-	QIODevice *xmlSource;
+	QIODevice *xmlSource;	//!< A pointer to the gtest .xml source
 
 public:
 	GTestParser(QIODevice *inStream);
 	GTestExecutableResults* parse();
-
 
 };
 
