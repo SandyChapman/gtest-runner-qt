@@ -22,6 +22,10 @@
 
 #include "GTestResults.h"
 
+/*! \brief Extends the QTreeWidgetItem to make a QObject derived version.
+ *
+ * \todo TODO::Examine alternative solutions to this structure (Custom treeview with hash data struct).
+ */
 class TestTreeWidgetItem : public QObject, public QTreeWidgetItem  {
 
 Q_OBJECT

@@ -23,7 +23,6 @@
 
 #include "GTestResults.h"
 
-
 /*! \brief This class logically represents a single unit test.
  *
  * This class attempts to mirror what an actual unit test is comprised of.
@@ -49,8 +48,8 @@ protected:
 								*/
 
 signals:
-	void requestingRun(QString testName, QString caseName = QString());
-	void testResultsReady();
+	void requestingRun(QString testName, QString caseName = QString()); //!< Sends a request to the parent GTest
+	void testResultsReady(); //!< Sends a notification that the test results have been received and are ready to be read.
 
 public:
 	GTest(QObject* parent = 0, QString name = QString());

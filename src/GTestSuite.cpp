@@ -37,7 +37,7 @@ GTestSuite::~GTestSuite()
  * Receives a run request from a child test. Adds the test to its runlist.
  * If received by a GTestSuite, this will emit a request with its name as
  * the testCase.
- * \TODO TODO::Store testName and testCase for selective execution by the GTestExecutable
+ * \todo TODO::Store testName and testCase for selective execution by the GTestExecutable
  * \param testName The name of the GTest to run.
  * \param testCase The name of the GTestSuite to run. Note that
  * 				   this is 'null' if sent from a GTest, and is the
@@ -75,7 +75,7 @@ void GTestSuite::receiveTestResults(GTestResults* testSuiteResults) {
  *
  * This test should be run by right-clicking and selecting run on
  * a test suite object.
- * \TODO TODO::Run all tests in suite immediately.
+ * \todo TODO::Run all tests in suite immediately.
  */
 void GTestSuite::run() {
 }

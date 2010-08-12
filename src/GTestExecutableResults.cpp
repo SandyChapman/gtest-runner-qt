@@ -16,13 +16,18 @@
 
 #include "GTestExecutableResults.h"
 
+/*! \brief Constructor
+ * \param name The name of the test executable this result belongs to.
+ */
 GTestExecutableResults::GTestExecutableResults(QString name)
 : GTestSuiteResults(name)
 {}
 
-GTestExecutableResults::~GTestExecutableResults() {
-
-}
+/*! \brief Destructor
+ *
+ */
+GTestExecutableResults::~GTestExecutableResults()
+{}
 
 
 

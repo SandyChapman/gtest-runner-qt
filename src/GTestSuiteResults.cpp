@@ -16,13 +16,19 @@
 
 #include "GTestSuiteResults.h"
 
+/*! \brief Constructor
+ *
+ * \param name The name of the unit test this result belongs to.
+ */
 GTestSuiteResults::GTestSuiteResults(QString name)
 : GTestResults(name)
 {}
 
-GTestSuiteResults::~GTestSuiteResults() {
-
-}
+/*! \brief Destructor
+ *
+ */
+GTestSuiteResults::~GTestSuiteResults()
+{}
 
 
 

@@ -21,10 +21,42 @@
 
 #include "GTestParser.h"
 
+/*! \brief Constructor
+ * \param inStream The data stream the represents the gtest .xml file source.
+ */
 GTestParser::GTestParser(QIODevice* inStream)
 : xmlSource(inStream)
 {}
 
+/*! \brief Parses the .xml file given to the constructor.
+ *
+ * This function takes the .xml source file and parses it. It creates a single
+ * GTestExecutableResults object which acts as the root node of a tree of
+ * GTestResults object.
+ * \dot
+	  digraph "Test Results Structure" {
+		node [shape=record, fontname=Helvetica, fontsize=10];
+		exe [label="GTestExecutableResults" URL="\ref GTestExecutableResults"];
+		suite1 [label="GTestSuiteResults" URL="\ref GTestSuiteResults"];
+		suite2 [label="GTestSuiteResults" URL="\ref GTestSuiteResults"];
+		suite3 [label="GTestSuiteResults" URL="\ref GTestSuiteResults"];
+		unit1 [label="GTestResults" URL="\ref GTestResults"];
+		unit2 [label="GTestResults" URL="\ref GTestResults"];
+		unit3 [label="GTestResults" URL="\ref GTestResults"];
+		unit4 [label="GTestResults" URL="\ref GTestResults"];
+		unit5 [label="GTestResults" URL="\ref GTestResults"];
+		exe -> suite1 [arrowhead="open", style="solid"];
+		exe -> suite2 [arrowhead="open", style="solid"];
+		exe -> suite3 [arrowhead="open", style="solid"];
+		suite1 -> unit1 [arrowhead="open", style="solid"];
+		suite2 -> unit2 [arrowhead="open", style="solid"];
+		suite3 -> unit3 [arrowhead="open", style="solid"];
+		suite3 -> unit4 [arrowhead="open", style="solid"];
+		suite3 -> unit5 [arrowhead="open", style="solid"];
+	  }
+   \enddot
+ * \return The tree of unit test results.
+ */
 GTestExecutableResults* GTestParser::parse() {
 	xmlSource->open(QIODevice::ReadOnly);
 	xmlSource->seek(0);

@@ -24,6 +24,12 @@
 #include "GTestResults.h"
 #include "TestTreeWidgetItem.h"
 
+/*! \brief An extension of the QTreeWidget to provide custom functionality.
+ *
+ * Currently, the only purpose of this subclass is to provide a mechanism of
+ * custom defined slots to asynchronously populate test results into the
+ * tree.
+ */
 class TestTreeWidget : public QTreeWidget {
 
 Q_OBJECT

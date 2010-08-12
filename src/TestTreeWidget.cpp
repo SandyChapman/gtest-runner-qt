@@ -18,13 +18,29 @@
 #include "GTestSuite.h"
 #include "GTestExecutable.h"
 
+/*! \brief Constructor
+ *
+ * \param parent The parent QWidget.
+ */
 TestTreeWidget::TestTreeWidget(QWidget* parent)
 : QTreeWidget(parent)
 {}
 
+/*! \brief Destructor
+ *
+ */
 TestTreeWidget::~TestTreeWidget()
 {}
 
+/*! \brief Populates a test result into the test tree.
+ *
+ * This function takes a QObject* which should be a TestTreeWidgetItem.
+ * If it is called with anything else, the function does nothing. It takes
+ * the item and retrieves its corresponding GTest. The GTest should already
+ * have its updated result attached to it, thus, it retrieves the result
+ * and sets the item to the appropriate pass / fail state.
+ * \param item This should be a TestTreeWidgetItem which needs its test result updated.
+ */
 void TestTreeWidget::populateTestResult(QObject* item) {
 	TestTreeWidgetItem* treeItem = static_cast<TestTreeWidgetItem*>(item);
 	if(treeItem == 0)

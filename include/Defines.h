@@ -22,6 +22,6 @@
 #ifndef DEFINES_H_
 #define DEFINES_H_
 
-typedef unsigned int uint;
+typedef unsigned int uint; //!< An unsigned integer type, should I be using uint32_t?
 
 #endif /* DEFINES_H_ */

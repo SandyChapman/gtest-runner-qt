@@ -27,6 +27,12 @@
 #include <QTreeWidgetItemIterator>
 #include <QVBoxLayout>
 
+/*! \brief Constructor
+ *
+ * \param parent The parent QWidget object. This should be null, as this is the main window.
+ * \param flags The main window flags for the application.
+ * <a href="http://doc.qt.nokia.com/4.6/qt.html#WindowType-enum">Qt::WFlags Reference</a>
+ */
 GTestRunner::GTestRunner(QWidget *parent, Qt::WFlags flags)
  : QMainWindow(parent, flags),
    fileMenu(tr("&File")), helpMenu(tr("&Help")), statusBar(this),
@@ -37,11 +43,17 @@ GTestRunner::GTestRunner(QWidget *parent, Qt::WFlags flags)
 	setup();
 }
 
+/*! \brief Destructor
+ *
+ */
 GTestRunner::~GTestRunner()
-{
+{}
 
-}
-
+/*! \brief Sets up the application GUI.
+ *
+ * This function sets up some high level objects and gets them
+ * to set up as well.
+ */
 void GTestRunner::setup() {
 	//menus
 	menuBar = QMainWindow::menuBar();
@@ -59,6 +71,10 @@ void GTestRunner::setup() {
 	setupLayout();
 }
 
+/*! \brief Sets up the application's menus.
+ *
+ * Creates menu items and adds actions to them.
+ */
 void GTestRunner::setupMenus() {
 	QAction* newTestSetupAct = new QAction(tr("&New Test Setup..."), this);
 	QAction* openTestSetupAct = new QAction(tr("&Open Test Setup..."), this);
@@ -85,6 +101,10 @@ void GTestRunner::setupMenus() {
 	menuBar->addMenu(&helpMenu);
 }
 
+/*! \brief Sets up the application's toolbars.
+ *
+ * Creates the toolbars and adds actions to them.
+ */
 void GTestRunner::setupToolBars() {
 	QAction* runTestsAct = new QAction(tr("Run"), this);
 	QAction* stopTestsAct = new QAction(tr("Stop"), this);
@@ -103,6 +123,11 @@ void GTestRunner::setupToolBars() {
 	testTreeTools.addAction(removeTestsAct);
 }
 
+/*! \brief Sets up the application's layout.
+ *
+ * After all the elements are created, they are placed
+ * in their appropriate layout.
+ */
 void GTestRunner::setupLayout() {
 	QGroupBox *treeBox = new QGroupBox(tr("Unit Tests Loaded"));
 	QVBoxLayout *treeLayout = new QVBoxLayout;
@@ -116,16 +141,24 @@ void GTestRunner::setupLayout() {
 	centralWidget.setLayout(mainLayout);
 }
 
+/*! \brief Slot to prompt a dialog to have the user add unit tests to run.
+ *
+ * This function prompts a file selection dialog and has the user select
+ * the gtest executable they wish to add to the testing setup. It has some
+ * basic error handling, however, it could use a bit more robustness.
+ * \todo TODO::Investigate security issues with this. Any way to detect gtest before running?
+ */
 void GTestRunner::addTests() {
-	bool addResolved = false;
+	bool addResolved = false; //flag to see if we've got a good test.
 	QString filepath;
 	GTestExecutable* newTest = new GTestExecutable(this);
 	while(!addResolved) {
 		filepath = QFileDialog::getOpenFileName(this, tr("Select Google Test Executable"));
 		qDebug() << "File path received:" << filepath;
-		if(filepath.isEmpty())
+		if(filepath.isEmpty()) //Empty path means user clicked cancel.
 			return;
 
+		//Non-empty path, so let's check out whether we can use it or not.
 		newTest->setExecutablePath(filepath);
 		GTestExecutable::STATE state = newTest->getState();
 		switch(state) {
@@ -175,16 +208,30 @@ void GTestRunner::addTests() {
 		}
 	}
 
-	invokeListingRetrieval(filepath);
+	//We've got a good test, so let's have it send up a listing.
+	invokeListingRetrieval(newTest);
 }
 
-void GTestRunner::invokeListingRetrieval(QString filepath) {
-	GTestExecutable *gtest = new GTestExecutable(this, filepath);
+/*! \brief Sets up and requests a listing from a GTestExecutable.
+ *
+ * This creates a signal / slot mapping so that the runner is informed
+ * when the listing is ready.
+ */
+void GTestRunner::invokeListingRetrieval(GTestExecutable* gtest) {
+	//Have the executable inform us when the listing is ready.
 	QObject::connect(gtest, SIGNAL(listingReady(GTestExecutable*)),
 					 this, SLOT(updateListing(GTestExecutable*)));
 	gtest->produceListing();
 }
 
+/*! \brief Updates the tree with a listing provided by 'gtest'.
+ *
+ * This function takes the 'gtest' and retrieves its listing. It then
+ * takes the listing and populates the main test tree with the tests
+ * it provides.
+ * \todo TODO::Update a listing that already exists.
+ * \todo TODO::Refactor this method. It's a bit too long.
+ */
 void GTestRunner::updateListing(GTestExecutable* gtest) {
 	qDebug() << "Updating listing";
 	const int exitCode = gtest->getExitCode();
@@ -259,10 +306,18 @@ void GTestRunner::updateListing(GTestExecutable* gtest) {
 					 &testTree, SLOT(populateTestResult(QObject*)));
 }
 
+/*! \brief Updates all the listings for every GTestExecutable.
+ *
+ * \todo TODO::Launch this function from a 'refresh' button.
+ * \todo TODO::Fill out this method.
+ */
 void GTestRunner::updateAllListings() {
 
 }
 
+/*! \brief Runs all tests that are checked.
+ *
+ */
 void GTestRunner::runTests() {
 	emit aboutToRunTests();
 	QTreeWidgetItemIterator it(&testTree, QTreeWidgetItemIterator::NoChildren);
@@ -289,18 +344,23 @@ void GTestRunner::runTests() {
 	emit runningTests();
 }
 
-//TODO::Refactor the three copies of setTestResults to one function
-//TODO::The above will require a common base class, or a templated function
-void GTestRunner::setTestResult(GTest* /*gtest*/) {
-}
+/*! \brief Sets the test result of the given gtest.
+ *
+ * \todo TODO::Check to see if this function is needed/used.
+ */
+void GTestRunner::setTestResult(GTest* /*gtest*/)
+{}
 
-/*
- *	This function handles correcting the check states. If a parent is
- *	part checked and all its children are part checked, we transition
- *	to fully checked (previous state must have been unchecked and a click
- *	must have been made on the parent). If any of the children are not
- *	part checked, we know that we did not in fact click on the parent
- *	(and thus we can immediately return), so a part checked parent is fine.
+/*! \brief Slot to handle maintaining valid checkbox states.
+ *
+ * This function handles correcting the check states. If a parent is
+ * part checked and all its children are part checked, we transition
+ * to fully checked (previous state must have been unchecked and a click
+ * must have been made on the parent). If any of the children are not
+ * part checked, we know that we did not in fact click on the parent
+ * (and thus we can immediately return), so a part checked parent is fine.
+ * \param item The item in the tree that was clicked.
+ * \param column The column of the 'item' that was clicked.
  */
 void GTestRunner::treeItemClicked(QTreeWidgetItem* item, int /*column*/) {
 	if(item->childCount() == 0 || item->parent() == 0)

@@ -74,7 +74,7 @@ private:
 	void readExecutableOutput(QBuffer& standardChannel);
 
 signals:
-	void listingReady(GTestExecutable* sender);
+	void listingReady(GTestExecutable* sender); //!< Sends notification that a new listing has been received.
 
 public slots:
 	void standardErrorAvailable();
@@ -123,7 +123,7 @@ inline QStringList GTestExecutable::getListing() const { return listing; }
  * 		 this is semantically clearer. This should either be removed, or
  * 		 perhaps a 'name' and 'filepath' could be two separate variables
  * 		 where 'filepath' is the full path and 'name' is simply the filename.
- * \TODO TODO::create a new instance variable 'filePath'.
+ * \todo TODO::create a new instance variable 'filePath'.
  */
 inline QString GTestExecutable::getExecutablePath() const { return name; }
 
@@ -154,7 +154,7 @@ inline int GTestExecutable::getExitCode() const { return exitCode; }
  * valid and that produceListing() and runTest() will work by calling
  * GTestExecutable::getState()
  * \param executablePath The fully qualified path to a gtest executable.
- * \TODO TODO::set the return value of this function to return STATE
+ * \todo TODO::set the return value of this function to return STATE
  */
 inline void GTestExecutable::setExecutablePath(QString executablePath) { this->name = executablePath; }
 
@@ -169,7 +169,7 @@ inline void GTestExecutable::setRunFlag(bool runOnSignal) { this->runOnSignal = 
  *
  * Resetting the executable prepares it to be run again and produce new
  * test results.
- * \TODO TODO::This should be clearing the buffers, runList, etc.
+ * \todo TODO::This should be clearing the buffers, runList, etc.
  */
 inline void GTestExecutable::resetRunState() { setRunFlag(false); }
 

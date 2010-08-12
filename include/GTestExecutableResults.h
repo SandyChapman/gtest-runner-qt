@@ -24,6 +24,12 @@
 #include "Defines.h"
 #include "GTestSuiteResults.h"
 
+/*! \brief Placeholder class to differentiate from GTestSuiteResults.
+ *
+ * Currently, this class provides no functionality beyond that of a
+ * GTestSuiteResults object. However, further changes to the software
+ * may prompt usefulness from this class.
+ */
 class GTestExecutableResults : public GTestSuiteResults {
 
 public:

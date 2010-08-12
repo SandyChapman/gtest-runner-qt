@@ -33,6 +33,12 @@
 #include "GTestExecutable.h"
 #include "TestTreeWidget.h"
 
+/*! \brief The is the main application window class.
+ *
+ * This class handles all the GUI functionality of the application (this may
+ * change as the application grows). It provides the interaction between
+ * the test running functionality and the user.
+ */
 class GTestRunner : public QMainWindow
 {
     Q_OBJECT
@@ -42,8 +48,8 @@ public:
     ~GTestRunner();
 
 signals:
-	void aboutToRunTests();
-	void runningTests();
+	void aboutToRunTests(); //!< Sends a signal to any listeners to prepare for test runs.
+	void runningTests();	//!< Sends a signal when the processes have been launched.
 
 public slots:
 	void addTests();
@@ -54,23 +60,23 @@ public slots:
 	void treeItemClicked(QTreeWidgetItem* item, int column);
 
 private:
-	QMenuBar *menuBar;
-	QMenu fileMenu;
-	QMenu helpMenu;
-	QStatusBar statusBar;
+	QMenuBar *menuBar;		//!< The main menu bar.
+	QMenu fileMenu;			//!< The file menu.
+	QMenu helpMenu;			//!< The help menu.
+	QStatusBar statusBar;	//!< The status bar.
 
-	QWidget centralWidget;
-	QToolBar testTreeTools;
-	TestTreeWidget testTree;
+	QWidget centralWidget;	//!< The <a href="http://doc.qt.nokia.com/4.6/qmainwindow.html#details">central widget</a>.
+	QToolBar testTreeTools;	//!< The tool bar for the test tree.
+	TestTreeWidget testTree;//!< The test tree.
 
-	QList<GTestExecutable*> gtestList;
+	QList<GTestExecutable*> gtestList;	//!< A list of all loaded gtest executables. \todo TODO::change list to a hash.
 
 	void setup();
 	void setupMenus();
 	void setupToolBars();
 	void setupLayout();
 
-	void invokeListingRetrieval(QString filename);
+	void invokeListingRetrieval(GTestExecutable* gtest);
 
 };
 

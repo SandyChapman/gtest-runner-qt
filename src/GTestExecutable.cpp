@@ -54,7 +54,7 @@ GTestExecutable::~GTestExecutable() {
  * A caller can determine when the listing is ready by connecting a slot to
  * the listingReady() slot.
  *
- * \TODO TODO::check the state variable before running.
+ * \todo TODO::check the state variable before running.
  */
 void GTestExecutable::produceListing() {
 	//We lock so that any attempt to try to produce a listing
@@ -79,7 +79,7 @@ void GTestExecutable::produceListing() {
  * processes the stdout buffer that was filled by the gtest executable.
  * It breaks the buffer into lines which is then understood by the GTestRunner.
  *
- * \TODO TODO::Have this function create the GTest / GTestSuite tree instead of the test runner
+ * \todo TODO::Have this function create the GTest / GTestSuite tree instead of the test runner
  */
 void GTestExecutable::parseListing(int /*exitCode*/, QProcess::ExitStatus exitStatus) {
 	if(exitStatus != QProcess::NormalExit) {
@@ -105,7 +105,7 @@ void GTestExecutable::parseListing(int /*exitCode*/, QProcess::ExitStatus exitSt
  * This creates a process and runs it based on the 'name' instance
  * variable which represents the filepath of the executable.
  *
- * \TODO TODO::Check the state before running the test.
+ * \todo TODO::Check the state before running the test.
  */
 void GTestExecutable::runTest() {
 	//We lock so that any attempt to try to produce a listing

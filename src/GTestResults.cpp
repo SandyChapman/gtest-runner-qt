@@ -16,12 +16,18 @@
 
 #include "GTestResults.h"
 
+/*! \brief Constructor
+ *
+ * \param name The name of the unit test to which this object belongs.
+ */
 GTestResults::GTestResults(QString name)
 : name(name), time(-1), failureMessages(), status(UNDEFINED)
 {}
 
-GTestResults::~GTestResults() {
-
-}
+/*! \brief Destructor
+ *
+ */
+GTestResults::~GTestResults()
+{}
 
 
