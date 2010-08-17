@@ -47,6 +47,7 @@ public slots:
 
 public:
 	GTestSuite(QObject* parent = 0, QString name = QString());
+	GTestSuite(GTestSuite* parent = 0, QString name = QString());
 	virtual ~GTestSuite();
 	void addTest(GTest* test);
 	void removeTest(GTest* test);

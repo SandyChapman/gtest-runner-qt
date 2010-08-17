@@ -17,12 +17,20 @@
 #ifndef TESTTREEWIDGET_H_
 #define TESTTREEWIDGET_H_
 
+#include <QHash>
+#include <QList>
+#include <QObject>
+#include <QSharedPointer>
+#include <QSignalMapper>
+#include <QString>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
+#include <QWidget>
 
-#include "GTest.h"
-#include "GTestResults.h"
-#include "TestTreeWidgetItem.h"
+#include "GTestExecutable.h"
+
+class GTest;
+class TestTreeWidgetItem;
 
 /*! \brief An extension of the QTreeWidget to provide custom functionality.
  *
@@ -34,14 +42,34 @@ class TestTreeWidget : public QTreeWidget {
 
 Q_OBJECT
 
+private:
+	QHash<QString, QSharedPointer<GTestExecutable> > gtestHash;	//!< A hash of all loaded gtest executables.
+	/*!< \todo Investigate whether the signal mapper is needed.
+	 * A (gtest signal-> tree item signal-> tree widget slot) might work fine.
+	 */
+	QSignalMapper signalMap;	//!< Maps signals from GTests to TreeWidgets.
+
+	template <class T, class U>
+	TestTreeWidgetItem* createNewTreeItem(T* parent, U* test);
+
+signals:
+	void resettingRunStates();
+	void runningTests();
+
 public slots:
 	void populateTestResult(QObject* item);
+	void updateListing(GTestExecutable* gtest);
+	void updateAllListings();
 
 public:
 	TestTreeWidget(QWidget* parent = 0);
 	virtual ~TestTreeWidget();
 
+	void insertExecutable(QSharedPointer<GTestExecutable> executable);
+	QList<QSharedPointer<GTestExecutable> > getExecutableList();
+
 };
 
+inline QList<QSharedPointer<GTestExecutable> > TestTreeWidget::getExecutableList() { return gtestHash.values(); }
 
 #endif /* TESTTREEWIDGET_H_ */

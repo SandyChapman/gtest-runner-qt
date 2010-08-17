@@ -27,6 +27,21 @@ GTestSuite::GTestSuite(QObject* parent, QString name)
 : GTest(parent, name), runList()
 {}
 
+/*! \brief Constructor
+ *
+ * This is the same as the constructor with the QObject* argument,
+ * except that addTest is called on the parent.
+ * \param parent A pointer to the parent test.
+ * \param name The name of the unit test. If called directly, this should be
+ * 			   the value \em testName in \code GTEST(testCase, testName) \endcode
+ */
+GTestSuite::GTestSuite(GTestSuite* parent, QString name)
+: GTest(parent, name), runList()
+{
+	if(parent)
+		parent->addTest(this);
+}
+
 /*! \brief  Destructor
  */
 GTestSuite::~GTestSuite()
@@ -48,7 +63,7 @@ void GTestSuite::receiveRunRequest(QString testName, QString testCase) {
 	if(!runList.contains(test))
 		runList.append(test);
 	if(testCase.isEmpty())
-		emit requestingRun(testName, name);
+		emit requestingRun(testName, objectName());
 }
 
 /*! \brief Receives the test results from the parent GTestExecutable object.
@@ -63,7 +78,7 @@ void GTestSuite::receiveTestResults(GTestResults* testSuiteResults) {
 	QList<GTest*>::iterator it = runList.begin();
 	GTestResults* testResults;
 	while(it != runList.end()) {
-		testResults = testSuiteResults->getTestResults((*it)->getName());
+		testResults = testSuiteResults->getTestResults((*it)->objectName());
 		(*it)->receiveTestResults(testResults);
 		++it;
 	}

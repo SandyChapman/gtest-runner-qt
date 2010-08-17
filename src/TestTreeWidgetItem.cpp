@@ -15,27 +15,28 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "TestTreeWidgetItem.h"
+#include "TestTreeWidget.h"
 
 /*! \brief Constructor
  *
  * <a href="http://doc.qt.nokia.com/4.6/qtreewidgetitem.html#type">See QTreeWidgetItem</a>
- * \param parent, The tree widget to which the object belongs.
+ * \param parent The tree widget to which the object belongs.
  * \param strings Initial strings to be inserted as columns of this element.
  * \param type A type used to identify what kind of data is attached to this item.
  */
-TestTreeWidgetItem::TestTreeWidgetItem(QTreeWidget* parent, const QStringList& strings, int type)
-: QObject(), QTreeWidgetItem(parent, strings, type)
+TestTreeWidgetItem::TestTreeWidgetItem(TestTreeWidget* parent, const QStringList& strings, int type)
+: QObject(parent), QTreeWidgetItem(parent, strings, type)
 {}
 
 /*! \brief Constructor
  *
  * <a href="http://doc.qt.nokia.com/4.6/qtreewidgetitem.html#type">See QTreeWidgetItem</a>
- * \param parent, The tree widget item to which the object belongs.
+ * \param parent The tree widget item to which the object belongs.
  * \param strings Initial strings to be inserted as columns of this element.
  * \param type A type used to identify what kind of data is attached to this item.
  */
-TestTreeWidgetItem::TestTreeWidgetItem(QTreeWidgetItem* parent, const QStringList& strings, int type)
-: QObject(), QTreeWidgetItem(parent, strings, type)
+TestTreeWidgetItem::TestTreeWidgetItem(TestTreeWidgetItem* parent, const QStringList& strings, int type)
+: QObject(parent), QTreeWidgetItem(parent, strings, type)
 {}
 
 /*! \brief Destructor

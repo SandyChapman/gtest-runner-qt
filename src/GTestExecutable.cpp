@@ -30,7 +30,7 @@
 GTestExecutable::GTestExecutable(QObject* parent, QString filePath)
 : GTestSuite(parent, filePath), state(VALID), processLock(),
   outputLock(), gtest(0), standardOutput(), standardError(),
-  listing(), testsToRun(), runOnSignal(false)
+  listingSet(), oldListingSet(), testsToRun(), runOnSignal(false)
 {
 	getState();
 }
@@ -53,13 +53,14 @@ GTestExecutable::~GTestExecutable() {
  * GTestExecutable objects while the QProcess retrieves the result.
  * A caller can determine when the listing is ready by connecting a slot to
  * the listingReady() slot.
- *
- * \todo TODO::check the state variable before running.
  */
 void GTestExecutable::produceListing() {
 	//We lock so that any attempt to try to produce a listing
 	//or run a test will block until we're done with what we're
 	//doing here.
+	if(getState() != VALID)
+		return; //! \todo throw error here?
+	//! \todo Check if the gtest file has changed, and preempt here if unchanged.
 	processLock.lock();
 	gtest = new QProcess();
 	QObject::connect(gtest, SIGNAL(readyReadStandardOutput()),
@@ -68,7 +69,7 @@ void GTestExecutable::produceListing() {
 					 this, SLOT(executableFinished(int, QProcess::ExitStatus)));
 	QObject::connect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
 					 this, SLOT(parseListing(int, QProcess::ExitStatus)));
-	gtest->start(name, QStringList() << "--gtest_list_tests");
+	gtest->start(objectName(), QStringList() << "--gtest_list_tests");
 	//unlock the processLock in the parseListing slot
 }
 
@@ -82,21 +83,72 @@ void GTestExecutable::produceListing() {
  * \todo TODO::Have this function create the GTest / GTestSuite tree instead of the test runner
  */
 void GTestExecutable::parseListing(int /*exitCode*/, QProcess::ExitStatus exitStatus) {
+	//Check status
 	if(exitStatus != QProcess::NormalExit) {
 		QMessageBox::warning((QWidget*)this->parent(),"Error Retrieving Listing",
 				"The Google test executable exited abnormally.");
 		processLock.unlock();
+		return;
 	}
+	//Status is good, set up some vars and let's start parsing
+	oldListingSet = listingSet; //copy old set, to find elements to remove
+	QString name;
+	QString line;
+	GTestSuite* testSuite;
+	GTest* test;
 	standardOutput.open(QBuffer::ReadOnly);
-	QByteArray temp;
 	while(standardOutput.canReadLine()) {
-		temp = standardOutput.readLine();
-		temp.resize(temp.size()-1);
-		qDebug() << temp;
-		listing << temp;
+		line = standardOutput.readLine();
+		line.resize(line.size()-1);	//remove \n
+		if(line.endsWith('.')) {	//this means its a test suite name
+			name = line.left(line.size()-1);	//get the name without the '.'
+			testSuite = findChild<GTestSuite*>(name);
+			if(!testSuite)	//if it doesn't already exist, make one
+				testSuite = new GTestSuite(this, name);
+			listingSet << name;	//add it to our new listing set
+		}
+		else {
+			//We should always run into 'testsuitename.'
+			//before we hit a unit test name.
+			Q_ASSERT(testSuite != 0);
+			name = line.right(line.size()-2); //test name is prepended with 2 spaces
+			test = testSuite->findChild<GTest*>(name);
+			if(!test)	//if it doesn't already exist, make one
+				test = new GTest(testSuite, name);
+			//add it to our new listingSet in form of 'testsuitename.testname"
+			listingSet << testSuite->objectName().append('.').append(name);
+		}
 	}
+	//diff our old set with our new set to find removed tests.
+	QSet<QString> diffedListing = oldListingSet - listingSet;
+	QStringList deletedSuites;
+	QSet<QString>::iterator it = diffedListing.begin();
+	while(it != diffedListing.end()) {
+		int indexOfDot = it->indexOf('.');
+		if(indexOfDot == -1) { //not in form of testsuitename.testname
+			//must be an entire suite to be removed.
+			testSuite = findChild<GTestSuite*>(*it);
+			Q_ASSERT(testSuite != 0);
+			deletedSuites << testSuite->objectName();
+			testSuite->deleteLater(); //deletes children and cleans up signals/slots
+			continue;
+		}
+		//its of the form "testsuitename.testname"
+		//check if we've deleted the suite already
+		name = it->left(indexOfDot);
+		if(deletedSuites.contains(name))
+			continue; // already handled the deletion
+		testSuite = findChild<GTestSuite*>(name);
+		Q_ASSERT(testSuite != 0);
+		test = findChild<GTest*>(it->right(it->length()-indexOfDot));
+		Q_ASSERT(test != 0);
+		test->deleteLater();
+		++it;
+	}
+
 	standardOutput.close();
 	processLock.unlock();
+	//! \todo Only emit listingReady if it differs from the last listing.
 	emit listingReady(this);
 }
 
@@ -108,6 +160,9 @@ void GTestExecutable::parseListing(int /*exitCode*/, QProcess::ExitStatus exitSt
  * \todo TODO::Check the state before running the test.
  */
 void GTestExecutable::runTest() {
+	//Check our state, and whether we're listening to run signals.
+	if(this->state != VALID || !this->runOnSignal)
+		return;
 	//We lock so that any attempt to try to produce a listing
 	//or run a test will block until we're done with what we're
 	//doing here.
@@ -117,7 +172,7 @@ void GTestExecutable::runTest() {
 					 this, SLOT(standardOutputAvailable()));
 	QObject::connect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
 					 this, SLOT(parseTestResults(int, QProcess::ExitStatus)));
-	gtest->start(name, QStringList() << "--gtest_output=xml:./test_detail_1337.xml");
+	gtest->start(objectName(), QStringList() << "--gtest_output=xml:./test_detail_1337.xml");
 	//unlock the processLock in the parseTestResults slot
 }
 
@@ -139,7 +194,7 @@ void GTestExecutable::parseTestResults(int exitCode, QProcess::ExitStatus exitSt
 	QList<GTest*>::iterator it = this->runList.begin();
 	GTestResults* testSuiteResults;
 	while(it != this->runList.end()) {
-		testSuiteResults = testResults->getTestResults((*it)->getName());
+		testSuiteResults = testResults->getTestResults((*it)->objectName());
 		(*it)->receiveTestResults(testSuiteResults);
 		++it;
 	}
@@ -157,12 +212,10 @@ void GTestExecutable::parseTestResults(int exitCode, QProcess::ExitStatus exitSt
  * \see GTestExecutable::readExecutableOutput()
  */
 void GTestExecutable::standardOutputAvailable() {
-	qDebug() << "std output available...";
 	outputLock.lock();
 	gtest->setReadChannel(QProcess::StandardOutput);
 	readExecutableOutput(standardOutput);
 	outputLock.unlock();
-	qDebug() << "List finished populating";
 }
 
 /*! \brief Slot that is called when stderr data is available from the process.
@@ -174,12 +227,10 @@ void GTestExecutable::standardOutputAvailable() {
  * \see GTestExecutable::readExecutableOutput()
  */
 void GTestExecutable::standardErrorAvailable() {
-	qDebug() << "std error available...";
 	outputLock.lock();
 	gtest->setReadChannel(QProcess::StandardError);
 	readExecutableOutput(standardError);
 	outputLock.unlock();
-	qDebug() << "List finished populating";
 }
 
 /*! \brief Reads the current readChannel data into the appropriate QBuffer.
@@ -200,11 +251,9 @@ void GTestExecutable::readExecutableOutput(QBuffer& standardChannel) {
 	standardChannel.open(QBuffer::WriteOnly);
 	while(!gtest->atEnd()) {
 		while(gtest->canReadLine()) {
-			qDebug() << "reading a line...";
 			lineLength = gtest->readLine(buffer, BUF_SIZE);
 			if(lineLength > 0 && lineLength <= BUF_SIZE) {
 				standardChannel.write(buffer);
-				qDebug() << buffer << "added to buffer.";
 			}
 		}
 	}
@@ -218,7 +267,6 @@ void GTestExecutable::readExecutableOutput(QBuffer& standardChannel) {
  * the exit statuses which can be subsequently checked by the test runner.
  */
 void GTestExecutable::executableFinished(int exitCode, QProcess::ExitStatus exitStatus) {
-	qDebug() << "exe finished";
 	QObject::disconnect(gtest, SIGNAL(readyReadStandardOutput()),
 						this, SLOT(standardOutputAvailable()));
 	QObject::disconnect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
@@ -240,7 +288,7 @@ void GTestExecutable::executableFinished(int exitCode, QProcess::ExitStatus exit
  */
 GTestExecutable::STATE GTestExecutable::getState() {
 	state = VALID;
-	QFile file(name);
+	QFile file(objectName());
 	if(!file.exists()) {
 		state = FILE_NOT_FOUND;
 	}

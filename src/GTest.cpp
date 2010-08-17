@@ -15,6 +15,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "GTest.h"
+#include "GTestResults.h"
+#include "GTestSuite.h"
 
 /*! \brief Constructor
  *
@@ -23,8 +25,26 @@
  * 			   the value \em testName in \code GTEST(testCase, testName) \endcode
  */
 GTest::GTest(QObject* parent, QString name)
-: QObject(parent), name(name), testResults(0)
-{}
+: QObject(parent), testResults(0)
+{
+	setObjectName(name);
+}
+
+/*! \brief Constructor
+ *
+ * This is the same as the constructor with the QObject* argument,
+ * except that addTest is called on the parent.
+ * \param parent A pointer to the parent test.
+ * \param name The name of the unit test. If called directly, this should be
+ * 			   the value \em testName in \code GTEST(testCase, testName) \endcode
+ */
+GTest::GTest(GTestSuite* parent, QString name)
+: QObject(parent), testResults(0)
+{
+	setObjectName(name);
+	if(parent)
+		parent->addTest(this);
+}
 
 /*! \bried Destructor
  *

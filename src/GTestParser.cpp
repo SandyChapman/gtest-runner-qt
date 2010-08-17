@@ -65,12 +65,9 @@ GTestExecutableResults* GTestParser::parse() {
 	GTestExecutableResults* testExeResults;
 	GTestSuiteResults* testSuiteResults;
 	GTestResults* testResults;
+	//! \bug \todo Fix the bug in here causing "premature end-of-file" error.
 	while(!xmlStream.atEnd()) {
-		qDebug() << xmlStream.text();
-		while(!xmlStream.readNextStartElement() && !xmlStream.hasError() && !xmlStream.atEnd()) {
-			qDebug() << xmlStream.text();
-		}
-		qDebug() << xmlStream.text();
+		while(!xmlStream.readNextStartElement() && !xmlStream.hasError() && !xmlStream.atEnd()) {}
 		attributes = xmlStream.attributes();
 		if(xmlStream.name() == "testcase") {
 			testResults = new GTestResults(attributes.value("name").toString());

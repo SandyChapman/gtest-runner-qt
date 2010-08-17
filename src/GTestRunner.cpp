@@ -22,6 +22,7 @@
 #include <QFileDialog>
 #include <QGroupBox>
 #include <QMessageBox>
+#include <QSharedPointer>
 #include <QSignalMapper>
 #include <QTreeWidgetItem>
 #include <QTreeWidgetItemIterator>
@@ -34,10 +35,9 @@
  * <a href="http://doc.qt.nokia.com/4.6/qt.html#WindowType-enum">Qt::WFlags Reference</a>
  */
 GTestRunner::GTestRunner(QWidget *parent, Qt::WFlags flags)
- : QMainWindow(parent, flags),
+ : QMainWindow(parent, flags), menuBar(0),
    fileMenu(tr("&File")), helpMenu(tr("&Help")), statusBar(this),
-   centralWidget(this), testTreeTools(this), testTree(this),
-   gtestList()
+   centralWidget(this), testTreeTools(this), testTree(this)
 {
 	resize(500, 800);
 	setup();
@@ -47,7 +47,9 @@ GTestRunner::GTestRunner(QWidget *parent, Qt::WFlags flags)
  *
  */
 GTestRunner::~GTestRunner()
-{}
+{
+	menuBar->deleteLater();
+}
 
 /*! \brief Sets up the application GUI.
  *
@@ -67,6 +69,10 @@ void GTestRunner::setup() {
 
 	QObject::connect(&testTree, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
 					 this, SLOT(treeItemClicked(QTreeWidgetItem*, int)));
+	QObject::connect(this, SIGNAL(aboutToRunTests()),
+					 &testTree, SIGNAL(resettingRunStates()));
+	QObject::connect(this, SIGNAL(runningTests()),
+					 &testTree, SIGNAL(runningTests()));
 
 	setupLayout();
 }
@@ -110,6 +116,7 @@ void GTestRunner::setupToolBars() {
 	QAction* stopTestsAct = new QAction(tr("Stop"), this);
 	QAction* addTestsAct = new QAction(tr("Add"), this);
 	QAction* removeTestsAct = new QAction(tr("Remove"), this);
+	QAction* refreshTestListAct = new QAction(tr("Refresh"), this);
 
 	QObject::connect(runTestsAct, SIGNAL(triggered()),
 					 this, SLOT(runTests()));
@@ -117,10 +124,14 @@ void GTestRunner::setupToolBars() {
 	QObject::connect(addTestsAct, SIGNAL(triggered()),
 					 this, SLOT(addTests()));
 
+	QObject::connect(refreshTestListAct, SIGNAL(triggered()),
+					 &testTree, SLOT(updateAllListings()));
+
 	testTreeTools.addAction(runTestsAct);
 	testTreeTools.addAction(stopTestsAct);
 	testTreeTools.addAction(addTestsAct);
 	testTreeTools.addAction(removeTestsAct);
+	testTreeTools.addAction(refreshTestListAct);
 }
 
 /*! \brief Sets up the application's layout.
@@ -151,7 +162,7 @@ void GTestRunner::setupLayout() {
 void GTestRunner::addTests() {
 	bool addResolved = false; //flag to see if we've got a good test.
 	QString filepath;
-	GTestExecutable* newTest = new GTestExecutable(this);
+	QSharedPointer<GTestExecutable> newTest = QSharedPointer<GTestExecutable>(new GTestExecutable(this));
 	while(!addResolved) {
 		filepath = QFileDialog::getOpenFileName(this, tr("Select Google Test Executable"));
 		qDebug() << "File path received:" << filepath;
@@ -202,117 +213,12 @@ void GTestRunner::addTests() {
 				break;
 			}
 			case GTestExecutable::VALID: {
+				testTree.insertExecutable(newTest);
 				addResolved = true;
 				break;
 			}
 		}
 	}
-
-	//We've got a good test, so let's have it send up a listing.
-	invokeListingRetrieval(newTest);
-}
-
-/*! \brief Sets up and requests a listing from a GTestExecutable.
- *
- * This creates a signal / slot mapping so that the runner is informed
- * when the listing is ready.
- */
-void GTestRunner::invokeListingRetrieval(GTestExecutable* gtest) {
-	//Have the executable inform us when the listing is ready.
-	QObject::connect(gtest, SIGNAL(listingReady(GTestExecutable*)),
-					 this, SLOT(updateListing(GTestExecutable*)));
-	gtest->produceListing();
-}
-
-/*! \brief Updates the tree with a listing provided by 'gtest'.
- *
- * This function takes the 'gtest' and retrieves its listing. It then
- * takes the listing and populates the main test tree with the tests
- * it provides.
- * \todo TODO::Update a listing that already exists.
- * \todo TODO::Refactor this method. It's a bit too long.
- */
-void GTestRunner::updateListing(GTestExecutable* gtest) {
-	qDebug() << "Updating listing";
-	const int exitCode = gtest->getExitCode();
-	qDebug() << "got exit code:" << exitCode;
-	QString exePath = gtest->getExecutablePath();
-	qDebug() << "got exe path:" << exePath;
-	if(exitCode != 0) {
-		QMessageBox::critical(this, "Error Retrieving Test Listing",
-					QString("Exit code").append(exitCode).append("was returned from the Google Test executable at").append(exePath).append(". Are you sure this is a valid Google Test unit test executable?"));
-		//TODO: perform switch statement of process error.
-		return;
-	}
-	QStringList testList = gtest->getListing();
-	qDebug() << "Retrieved listing. Size ="<<testList.size();
-	QStringList::iterator it = testList.begin();
-
-
-	TestTreeWidgetItem* testContainer = new TestTreeWidgetItem(&testTree,QStringList() << exePath);
-	testContainer->setFlags(Qt::ItemIsTristate | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-	testContainer->setCheckState(0, Qt::Checked);
-	QVariant var;
-	var.setValue<GTestExecutable*>(gtest);
-	testContainer->setData(0,Qt::UserRole,var);
-	QObject::connect(this, SIGNAL(aboutToRunTests()),
-					 gtest, SLOT(resetRunState()));
-	QObject::connect(this, SIGNAL(runningTests()),
-					 gtest, SLOT(runTest()));
-	QSignalMapper* signalMap = new QSignalMapper(&testTree);
-	signalMap->setMapping(gtest, testContainer);
-	QObject::connect(gtest, SIGNAL(testResultsReady()),
-					 signalMap, SLOT(map()));
-
-	TestTreeWidgetItem* topLevelItem = 0;
-	TestTreeWidgetItem* newItem = 0;
-	GTestSuite* suite = 0;
-	GTest* test = 0;
-	while(it != testList.end()) {
-		qDebug() << *it;
-		if(it->endsWith(".")) {
-			//drop the '.' and make it a data item
-			QString suiteName = it->left(it->size()-1);
-			topLevelItem = new TestTreeWidgetItem(testContainer, QStringList()<<suiteName);
-			topLevelItem->setFlags(Qt::ItemIsTristate | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-			topLevelItem->setCheckState(0, Qt::Checked);
-			suite = new GTestSuite(gtest, suiteName);
-			var.setValue<GTestSuite*>(suite);
-			topLevelItem->setData(0,Qt::UserRole,var);
-			gtest->addTest(suite);
-
-			signalMap->setMapping(suite, topLevelItem);
-			QObject::connect(suite, SIGNAL(testResultsReady()),
-							 signalMap, SLOT(map()));
-		}
-		else {
-			//drop the spaces and make it a data item
-			QString testName = it->right(it->size()-2);
-			newItem = new TestTreeWidgetItem(topLevelItem, QStringList()<<testName);
-			newItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-			newItem->setCheckState(0,Qt::Checked);
-			test = new GTest(suite, testName);
-			var.setValue<GTest*>(test);
-			newItem->setData(0,Qt::UserRole,var);
-			suite->addTest(test);
-
-			signalMap->setMapping(test, newItem);
-			QObject::connect(test, SIGNAL(testResultsReady()),
-							 signalMap, SLOT(map()));
-		}
-		++it;
-	}
-	QObject::connect(signalMap, SIGNAL(mapped(QObject*)),
-					 &testTree, SLOT(populateTestResult(QObject*)));
-}
-
-/*! \brief Updates all the listings for every GTestExecutable.
- *
- * \todo TODO::Launch this function from a 'refresh' button.
- * \todo TODO::Fill out this method.
- */
-void GTestRunner::updateAllListings() {
-
 }
 
 /*! \brief Runs all tests that are checked.
@@ -322,8 +228,10 @@ void GTestRunner::runTests() {
 	emit aboutToRunTests();
 	QTreeWidgetItemIterator it(&testTree, QTreeWidgetItemIterator::NoChildren);
 	while(*it) {
-		if((*it)->checkState(0) != Qt::Checked)
+		if((*it)->checkState(0) != Qt::Checked) {
+			it++;
 			continue;
+		}
 		(*it)->data(0,Qt::UserRole).value<GTest*>()->run();
 		it++;
 	}
@@ -333,8 +241,6 @@ void GTestRunner::runTests() {
 			continue;
 		GTestExecutable* gtest = topLevelItem->data(0,Qt::UserRole).value<GTestExecutable*>();
 		if(gtest != 0 && gtest->getState() == GTestExecutable::VALID) {
-			//QObject::connect(gtest, SIGNAL(testResultsReady(GTest*)),
-			//				 this, SLOT(fillTestResults(GTestExecutable*)));
 			gtest->setRunFlag(true);
 		}
 		else
@@ -343,13 +249,6 @@ void GTestRunner::runTests() {
 	}
 	emit runningTests();
 }
-
-/*! \brief Sets the test result of the given gtest.
- *
- * \todo TODO::Check to see if this function is needed/used.
- */
-void GTestRunner::setTestResult(GTest* /*gtest*/)
-{}
 
 /*! \brief Slot to handle maintaining valid checkbox states.
  *

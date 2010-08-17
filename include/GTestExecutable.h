@@ -22,6 +22,7 @@
 #include <QProcess>
 #include <QMetaType>
 #include <QMutex>
+#include <QSet>
 
 #include "GTestExecutableResults.h"
 #include "GTestSuite.h"
@@ -61,7 +62,8 @@ private:
 	QProcess *gtest;		//!< The process thread for running tests.
 	QBuffer standardOutput;	//!< The buffer to hold the stdout text.
 	QBuffer standardError;	//!< The buffer to hold the stderr text.
-	QStringList listing;	//!< The list of unit test suites provided.
+	QSet<QString> listingSet;//!< The set of unit test suites provided.
+	QSet<QString> oldListingSet;//!< The set of elements prior to an update.
 	QStringList testsToRun;	//!< The list of tests to run.
 	bool runOnSignal;		/*!< A flag to indicate whether a process should be
 							 *   run when the runTest slot is called */
@@ -95,7 +97,8 @@ public:
 	QString getExecutablePath() const;
 	int getExitCode() const;
 	QProcess::ExitStatus getExitStatus() const;
-	QStringList getListing() const;
+	const QSet<QString>& getListing() const;
+	const QSet<QString>& getOldListing() const;
 	STATE getState();
 	void setRunFlag(bool runOnSignal);
 
@@ -111,11 +114,17 @@ Q_DECLARE_METATYPE(GTestExecutable*);
 
 /*! \brief Retrieves the listing (not necessarily populated).
  *
- * The caller should ensure that produce listing has been called first and
+ * The caller should ensure that produceListing() has been called first and
  * that the QProcess has successfully completed.
  * \see GTestExecutable::produceListing()
  */
-inline QStringList GTestExecutable::getListing() const { return listing; }
+inline const QSet<QString>& GTestExecutable::getListing() const { return listingSet; }
+
+/*! \brief Retrieves the listing prior to an update (not necessarily populated).
+ *
+ * If nothing has changed between sets, oldListing should be equal to listing.
+ */
+inline const QSet<QString>& GTestExecutable::getOldListing() const { return oldListingSet; }
 
 /*! \brief Retrieves the executable path (i.e. name) of the executable file
  *
@@ -125,7 +134,7 @@ inline QStringList GTestExecutable::getListing() const { return listing; }
  * 		 where 'filepath' is the full path and 'name' is simply the filename.
  * \todo TODO::create a new instance variable 'filePath'.
  */
-inline QString GTestExecutable::getExecutablePath() const { return name; }
+inline QString GTestExecutable::getExecutablePath() const { return objectName(); }
 
 /*! \brief Retrieves the error produced from running the gtest executable.
  *
@@ -156,7 +165,7 @@ inline int GTestExecutable::getExitCode() const { return exitCode; }
  * \param executablePath The fully qualified path to a gtest executable.
  * \todo TODO::set the return value of this function to return STATE
  */
-inline void GTestExecutable::setExecutablePath(QString executablePath) { this->name = executablePath; }
+inline void GTestExecutable::setExecutablePath(QString executablePath) { setObjectName(executablePath); }
 
 /*! \brief Sets the flag that determines whether this GTestExecutable
  *  responds to the runTest() slot.

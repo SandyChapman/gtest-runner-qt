@@ -53,10 +53,7 @@ signals:
 
 public slots:
 	void addTests();
-	void updateAllListings();
 	void runTests();
-	void updateListing(GTestExecutable* gtest);
-	void setTestResult(GTest* gtest);
 	void treeItemClicked(QTreeWidgetItem* item, int column);
 
 private:
@@ -69,14 +66,12 @@ private:
 	QToolBar testTreeTools;	//!< The tool bar for the test tree.
 	TestTreeWidget testTree;//!< The test tree.
 
-	QList<GTestExecutable*> gtestList;	//!< A list of all loaded gtest executables. \todo TODO::change list to a hash.
-
 	void setup();
 	void setupMenus();
 	void setupToolBars();
 	void setupLayout();
 
-	void invokeListingRetrieval(GTestExecutable* gtest);
+	void invokeListingRetrieval(QSharedPointer<GTestExecutable> gtest);
 
 };
 

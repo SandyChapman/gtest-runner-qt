@@ -33,7 +33,7 @@ public:
 	//! The run status of the GTest.
 	enum STATUS {
 		RUN,		//!< The test was run.
-		//! \todo TODO::Investigate other run status of a GTest.
+		//! \todo Investigate other run status of a GTest.
 		UNDEFINED	//!< Currently not sure what the other possibilities are.
 	};
 

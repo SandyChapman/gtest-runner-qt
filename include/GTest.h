@@ -21,7 +21,8 @@
 #include <QObject>
 #include <QString>
 
-#include "GTestResults.h"
+class GTestResults;
+class GTestSuite;
 
 /*! \brief This class logically represents a single unit test.
  *
@@ -38,7 +39,8 @@ class GTest : public QObject {
 Q_OBJECT
 
 protected:
-	QString name;	/**< Represents the name of the test.
+	//QString name;
+	/**< Represents the name of the test.
 					 *   In the case of the GTestExecutable class, this holds
 					 *   the executable's file path.
 					 */
@@ -49,12 +51,12 @@ protected:
 
 signals:
 	void requestingRun(QString testName, QString caseName = QString()); //!< Sends a request to the parent GTest
-	void testResultsReady(); //!< Sends a notification that the test results have been received and are ready to be read.
+	void testResultsReady();//!< Sends a notification that the test results have been received and are ready to be read.
 
 public:
 	GTest(QObject* parent = 0, QString name = QString());
+	GTest(GTestSuite* parent = 0, QString name = QString());
 	virtual ~GTest();
-	QString getName() const;
 	const GTestResults* getTestResults() const;
 
 	virtual void receiveTestResults(GTestResults* testResults);
@@ -74,15 +76,7 @@ Q_DECLARE_METATYPE(GTest*);
  * 	     run. In which case, this will not simply add the test to the queue,
  *       but may need some mechanism to run immediately. This is still in planning.
  */
-inline void GTest::run() { emit requestingRun(name); }
-
-/*! \brief Retrieve the name of the test.
- *
- * \return For a GTest, this returns the test name.
- * \return For a GTestSuite, it returns the test case name.
- * \return For a GTestExecutable, it returns the file's path.
- */
-inline QString GTest::getName() const { return name; }
+inline void GTest::run() { emit requestingRun(objectName()); }
 
 /*! \brief Retrieve the results of the test.
  *

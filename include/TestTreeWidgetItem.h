@@ -18,7 +18,11 @@
 #define TESTTREEWIDGETITEM_H_
 
 #include <QObject>
+#include <QStringList>
 #include <QTreeWidgetItem>
+
+class TestTreeWidget;
+class TestTreeWidgetItem;
 
 #include "GTestResults.h"
 
@@ -31,8 +35,8 @@ class TestTreeWidgetItem : public QObject, public QTreeWidgetItem  {
 Q_OBJECT
 
 public:
-	TestTreeWidgetItem(QTreeWidget* parent, const QStringList& strings, int type = Type);
-	TestTreeWidgetItem(QTreeWidgetItem* parent, const QStringList& strings, int type = Type);
+	TestTreeWidgetItem(TestTreeWidget* parent, const QStringList& strings, int type = Type);
+	TestTreeWidgetItem(TestTreeWidgetItem* parent, const QStringList& strings, int type = Type);
 	virtual ~TestTreeWidgetItem();
 
 };
