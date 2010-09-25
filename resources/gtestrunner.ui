@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>GTestRunner</class>
+ <widget class="QMainWindow" name="GTestRunner">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>514</width>
+    <height>786</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>GTestRunner</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QTreeView" name="testTree">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>1</horstretch>
+        <verstretch>1</verstretch>
+       </sizepolicy>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>514</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="fileMenu">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="newTestSetupAction"/>
+    <addaction name="openTestSetupAction"/>
+    <addaction name="saveTestSetupAction"/>
+    <addaction name="importTestAction"/>
+    <addaction name="separator"/>
+    <addaction name="exitAction"/>
+   </widget>
+   <widget class="QMenu" name="helpMenu">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="aboutAction"/>
+    <addaction name="aboutQtAction"/>
+   </widget>
+   <addaction name="fileMenu"/>
+   <addaction name="helpMenu"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>LeftToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="runTestsAction"/>
+   <addaction name="stopTestsAction"/>
+   <addaction name="refreshAction"/>
+   <addaction name="importTestAction"/>
+   <addaction name="removeTestsAction"/>
+  </widget>
+  <action name="newTestSetupAction">
+   <property name="icon">
+    <iconset resource="gtestrunner.qrc">
+     <normaloff>:/icons/newfile.svg</normaloff>:/icons/newfile.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;New Test Setup...</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a new test setup</string>
+   </property>
+   <property name="statusTip">
+    <string>Create a new test setup</string>
+   </property>
+   <property name="whatsThis">
+    <string>Creates a new setup for saving collections of loaded tests</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="openTestSetupAction">
+   <property name="icon">
+    <iconset resource="gtestrunner.qrc">
+     <normaloff>:/icons/openfile.svg</normaloff>:/icons/openfile.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Open Test Setup...</string>
+   </property>
+   <property name="statusTip">
+    <string>Open Test Setup</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="saveTestSetupAction">
+   <property name="icon">
+    <iconset resource="gtestrunner.qrc">
+     <normaloff>:/icons/savefile.svg</normaloff>:/icons/savefile.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Save Test Setup...</string>
+   </property>
+   <property name="statusTip">
+    <string>Save Test Setup</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="importTestAction">
+   <property name="icon">
+    <iconset resource="gtestrunner.qrc">
+     <normaloff>:/icons/plus.svg</normaloff>:/icons/plus.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;Import Test Executable</string>
+   </property>
+   <property name="statusTip">
+    <string>Import Test Executable</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+A</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="aboutAction">
+   <property name="icon">
+    <iconset resource="gtestrunner.qrc">
+     <normaloff>:/icons/help.svg</normaloff>:/icons/help.svg</iconset>
+   </property>
+   <property name="text">
+    <string>&amp;About GTestRunner...</string>
+   </property>
+   <property name="statusTip">
+    <string>About GTestRunner</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="aboutQtAction">
+   <property name="icon">
+    <iconset resource="gtestrunner.qrc">
+     <normaloff>:/icons/qt.png</normaloff>:/icons/qt.png</iconset>
+   </property>
+   <property name="text">
+    <string>About &amp;Qt...</string>
+   </property>
+   <property name="statusTip">
+    <string>About Qt</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="exitAction">
+   <property name="icon">
+    <iconset resource="gtestrunner.qrc">
+     <normaloff>:/icons/exit.svg</normaloff>:/icons/exit.svg</iconset>
+   </property>
+   <property name="text">
+    <string>E&amp;xit</string>
+   </property>
+   <property name="statusTip">
+    <string>Exit GTestRunner</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+   <property name="iconVisibleInMenu">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="removeTestsAction">
+   <property name="icon">
+    <iconset resource="gtestrunner.qrc">
+     <normaloff>:/icons/remove.svg</normaloff>:/icons/remove.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Remove Selected Tests</string>
+   </property>
+   <property name="toolTip">
+    <string>Remove selected test(s) from tree</string>
+   </property>
+   <property name="statusTip">
+    <string>Remove selected test(s) from tree</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="runTestsAction">
+   <property name="icon">
+    <iconset resource="gtestrunner.qrc">
+     <normaloff>:/icons/run.svg</normaloff>:/icons/run.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Run Checked Tests</string>
+   </property>
+   <property name="toolTip">
+    <string>Run all checked tests in tree</string>
+   </property>
+   <property name="statusTip">
+    <string>Run all checked tests</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Return</string>
+   </property>
+  </action>
+  <action name="refreshAction">
+   <property name="icon">
+    <iconset resource="gtestrunner.qrc">
+     <normaloff>:/icons/reload.svg</normaloff>:/icons/reload.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Refresh Test Tree</string>
+   </property>
+   <property name="toolTip">
+    <string>Refresh the tests listings in the tree</string>
+   </property>
+   <property name="statusTip">
+    <string>Refresh Test Tree</string>
+   </property>
+   <property name="shortcut">
+    <string>F5</string>
+   </property>
+  </action>
+  <action name="stopTestsAction">
+   <property name="icon">
+    <iconset resource="gtestrunner.qrc">
+     <normaloff>:/icons/stop.svg</normaloff>:/icons/stop.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Stop Running Tests</string>
+   </property>
+   <property name="toolTip">
+    <string>Stop all running tests</string>
+   </property>
+   <property name="statusTip">
+    <string>Stop all running tests</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Return</string>
+   </property>
+  </action>
+ </widget>
+ <resources>
+  <include location="gtestrunner.qrc"/>
+ </resources>
+ <connections/>
+</ui>

@@ -1,0 +1,16 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>exit.svg</file>
+    <file>help.svg</file>
+    <file>newfile.svg</file>
+    <file>openfile.svg</file>
+    <file>plus.svg</file>
+    <file>qt.png</file>
+    <file>reload.svg</file>
+    <file>remove.svg</file>
+    <file>run.svg</file>
+    <file>savefile.svg</file>
+    <file>savefileas.svg</file>
+    <file>stop.svg</file>
+  </qresource>
+</RCC>
