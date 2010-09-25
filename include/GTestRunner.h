@@ -30,8 +30,11 @@
 #include <QToolBar>
 #include <QTreeWidget>
 
+#include "ui_gtestrunner.h"
+
 #include "GTestExecutable.h"
-#include "TestTreeWidget.h"
+
+class TestTreeModel;
 
 /*! \brief The is the main application window class.
  *
@@ -39,7 +42,7 @@
  * change as the application grows). It provides the interaction between
  * the test running functionality and the user.
  */
-class GTestRunner : public QMainWindow
+class GTestRunner : public QMainWindow, private Ui::GTestRunner
 {
     Q_OBJECT
 
@@ -53,25 +56,13 @@ signals:
 
 public slots:
 	void addTests();
-	void runTests();
 	void treeItemClicked(QTreeWidgetItem* item, int column);
 
 private:
-	QMenuBar *menuBar;		//!< The main menu bar.
-	QMenu fileMenu;			//!< The file menu.
-	QMenu helpMenu;			//!< The help menu.
-	QStatusBar statusBar;	//!< The status bar.
-
-	QWidget centralWidget;	//!< The <a href="http://doc.qt.nokia.com/4.6/qmainwindow.html#details">central widget</a>.
-	QToolBar testTreeTools;	//!< The tool bar for the test tree.
-	TestTreeWidget testTree;//!< The test tree.
-
 	void setup();
-	void setupMenus();
-	void setupToolBars();
-	void setupLayout();
-
 	void invokeListingRetrieval(QSharedPointer<GTestExecutable> gtest);
+
+	TestTreeModel* testModel;
 
 };
 

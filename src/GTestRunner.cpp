@@ -15,7 +15,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "GTestRunner.h"
-#include "TestTreeWidgetItem.h"
+#include "TestTreeModel.h"
 
 #include <QAction>
 #include <QDebug>
@@ -24,6 +24,7 @@
 #include <QMessageBox>
 #include <QSharedPointer>
 #include <QSignalMapper>
+#include <QTreeView>
 #include <QTreeWidgetItem>
 #include <QTreeWidgetItemIterator>
 #include <QVBoxLayout>
@@ -35,11 +36,9 @@
  * <a href="http://doc.qt.nokia.com/4.6/qt.html#WindowType-enum">Qt::WFlags Reference</a>
  */
 GTestRunner::GTestRunner(QWidget *parent, Qt::WFlags flags)
- : QMainWindow(parent, flags), menuBar(0),
-   fileMenu(tr("&File")), helpMenu(tr("&Help")), statusBar(this),
-   centralWidget(this), testTreeTools(this), testTree(this)
+ : QMainWindow(parent, flags)
 {
-	resize(500, 800);
+	setupUi(this);
 	setup();
 }
 
@@ -48,7 +47,6 @@ GTestRunner::GTestRunner(QWidget *parent, Qt::WFlags flags)
  */
 GTestRunner::~GTestRunner()
 {
-	menuBar->deleteLater();
 }
 
 /*! \brief Sets up the application GUI.
@@ -57,99 +55,23 @@ GTestRunner::~GTestRunner()
  * to set up as well.
  */
 void GTestRunner::setup() {
-	//menus
-	menuBar = QMainWindow::menuBar();
-	setupMenus();
-	setMenuBar(menuBar);
+	testModel = new TestTreeModel();
+	testTree->setModel(testModel);
 
-	//toolbar
-	setupToolBars();
+	QObject::connect(aboutQtAction, SIGNAL(triggered()),
+					 qApp, SLOT(aboutQt()));
 
-	setCentralWidget(&centralWidget);
-
-	QObject::connect(&testTree, SIGNAL(itemChanged(QTreeWidgetItem*, int)),
-					 this, SLOT(treeItemClicked(QTreeWidgetItem*, int)));
-	QObject::connect(this, SIGNAL(aboutToRunTests()),
-					 &testTree, SIGNAL(resettingRunStates()));
-	QObject::connect(this, SIGNAL(runningTests()),
-					 &testTree, SIGNAL(runningTests()));
-
-	setupLayout();
-}
-
-/*! \brief Sets up the application's menus.
- *
- * Creates menu items and adds actions to them.
- */
-void GTestRunner::setupMenus() {
-	QAction* newTestSetupAct = new QAction(tr("&New Test Setup..."), this);
-	QAction* openTestSetupAct = new QAction(tr("&Open Test Setup..."), this);
-	QAction* saveTestSetupAct = new QAction(tr("&Save Test Setup..."), this);
-	QAction* importTestExeAct = new QAction(tr("&Import Test Executable"), this);
-	QAction* quitAct = new QAction(tr("&Exit"), this);
-
-	QObject::connect(importTestExeAct, SIGNAL(triggered()),
+	QObject::connect(importTestAction, SIGNAL(triggered()),
 					 this, SLOT(addTests()));
 
-	fileMenu.addAction(newTestSetupAct);
-	fileMenu.addAction(openTestSetupAct);
-	fileMenu.addAction(saveTestSetupAct);
-	fileMenu.addAction(importTestExeAct);
-	fileMenu.addAction(quitAct);
+	QObject::connect(runTestsAction, SIGNAL(triggered()),
+					 testModel, SLOT(runTests()));
 
-	QAction* aboutAct = new QAction(tr("&About GTestRunner..."), this);
-	QAction* aboutQtAct = new QAction(tr("About &Qt..."), this);
+	QObject::connect(refreshAction, SIGNAL(triggered()),
+					 testTree, SLOT(updateAllListings()));
 
-	helpMenu.addAction(aboutAct);
-	helpMenu.addAction(aboutQtAct);
-
-	menuBar->addMenu(&fileMenu);
-	menuBar->addMenu(&helpMenu);
-}
-
-/*! \brief Sets up the application's toolbars.
- *
- * Creates the toolbars and adds actions to them.
- */
-void GTestRunner::setupToolBars() {
-	QAction* runTestsAct = new QAction(tr("Run"), this);
-	QAction* stopTestsAct = new QAction(tr("Stop"), this);
-	QAction* addTestsAct = new QAction(tr("Add"), this);
-	QAction* removeTestsAct = new QAction(tr("Remove"), this);
-	QAction* refreshTestListAct = new QAction(tr("Refresh"), this);
-
-	QObject::connect(runTestsAct, SIGNAL(triggered()),
-					 this, SLOT(runTests()));
-
-	QObject::connect(addTestsAct, SIGNAL(triggered()),
-					 this, SLOT(addTests()));
-
-	QObject::connect(refreshTestListAct, SIGNAL(triggered()),
-					 &testTree, SLOT(updateAllListings()));
-
-	testTreeTools.addAction(runTestsAct);
-	testTreeTools.addAction(stopTestsAct);
-	testTreeTools.addAction(addTestsAct);
-	testTreeTools.addAction(removeTestsAct);
-	testTreeTools.addAction(refreshTestListAct);
-}
-
-/*! \brief Sets up the application's layout.
- *
- * After all the elements are created, they are placed
- * in their appropriate layout.
- */
-void GTestRunner::setupLayout() {
-	QGroupBox *treeBox = new QGroupBox(tr("Unit Tests Loaded"));
-	QVBoxLayout *treeLayout = new QVBoxLayout;
-	treeLayout->addWidget(&testTreeTools);
-	treeLayout->addWidget(&testTree);
-	treeBox->setLayout(treeLayout);
-
-	QVBoxLayout *mainLayout = new QVBoxLayout;
-	mainLayout->addWidget(treeBox);
-
-	centralWidget.setLayout(mainLayout);
+	QObject::connect(removeTestsAction, SIGNAL(triggered()),
+					 testTree, SLOT(removeSelectedTests()));
 }
 
 /*! \brief Slot to prompt a dialog to have the user add unit tests to run.
@@ -162,7 +84,6 @@ void GTestRunner::setupLayout() {
 void GTestRunner::addTests() {
 	bool addResolved = false; //flag to see if we've got a good test.
 	QString filepath;
-	QSharedPointer<GTestExecutable> newTest = QSharedPointer<GTestExecutable>(new GTestExecutable(this));
 	while(!addResolved) {
 		filepath = QFileDialog::getOpenFileName(this, tr("Select Google Test Executable"));
 		qDebug() << "File path received:" << filepath;
@@ -170,10 +91,8 @@ void GTestRunner::addTests() {
 			return;
 
 		//Non-empty path, so let's check out whether we can use it or not.
-		newTest->setExecutablePath(filepath);
-		GTestExecutable::STATE state = newTest->getState();
-		switch(state) {
-			case GTestExecutable::FILE_NOT_FOUND: {
+		switch(testModel->addDataSource(filepath)) {
+			case TestTreeModel::FILE_NOT_FOUND: {
 				QMessageBox::StandardButton btnPressed = QMessageBox::warning(this,
 						tr("File Not Found"),
 						tr("It appears the filename entered does not exist. Please select a valid Google test executable."),
@@ -186,7 +105,7 @@ void GTestRunner::addTests() {
 					}
 			break;
 			}
-			case GTestExecutable::INSUFFICIENT_PRIVILEGES: {
+			case TestTreeModel::INSUFFICIENT_PRIVILEGES: {
 				QMessageBox::StandardButton btnPressed = QMessageBox::warning(this,
 						tr("Insufficient Permissions"),
 						tr("It appears that you do not have sufficient privileges to execute this file. \
@@ -212,42 +131,21 @@ void GTestRunner::addTests() {
 				}
 				break;
 			}
-			case GTestExecutable::VALID: {
-				testTree.insertExecutable(newTest);
-				addResolved = true;
+			case TestTreeModel::UNKNOWN: {
+				QMessageBox::warning(this,
+					tr("Unknown Error"),
+					tr("An unknown error has occured."),
+					QMessageBox::Ok);
 				break;
+			}
+			case TestTreeModel::NO_ERROR: {
+				return;
+//				testTree->insertExecutable(newTest);
+//				addResolved = true;
+//				break;
 			}
 		}
 	}
-}
-
-/*! \brief Runs all tests that are checked.
- *
- */
-void GTestRunner::runTests() {
-	emit aboutToRunTests();
-	QTreeWidgetItemIterator it(&testTree, QTreeWidgetItemIterator::NoChildren);
-	while(*it) {
-		if((*it)->checkState(0) != Qt::Checked) {
-			it++;
-			continue;
-		}
-		(*it)->data(0,Qt::UserRole).value<GTest*>()->run();
-		it++;
-	}
-	for(int i=0, j=testTree.topLevelItemCount(); i<j; i++) {
-		QTreeWidgetItem* topLevelItem = testTree.topLevelItem(i);
-		if(topLevelItem->checkState(0) == Qt::Unchecked)
-			continue;
-		GTestExecutable* gtest = topLevelItem->data(0,Qt::UserRole).value<GTestExecutable*>();
-		if(gtest != 0 && gtest->getState() == GTestExecutable::VALID) {
-			gtest->setRunFlag(true);
-		}
-		else
-			QMessageBox::warning(this,"Invalid Google Test",
-					"An error has occurred when attempting to run a Google Test.");
-	}
-	emit runningTests();
 }
 
 /*! \brief Slot to handle maintaining valid checkbox states.

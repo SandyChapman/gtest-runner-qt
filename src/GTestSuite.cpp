@@ -86,12 +86,18 @@ void GTestSuite::receiveTestResults(GTestResults* testSuiteResults) {
 	emit testResultsReady();
 }
 
-/*! \brief Runs all tests in the suite immediately.
+/*! \brief Sets all tests in the suite to be run.
  *
  * This test should be run by right-clicking and selecting run on
  * a test suite object.
- * \todo TODO::Run all tests in suite immediately.
  */
 void GTestSuite::run() {
+	runList.clear();
+	runList.append(reinterpret_cast<const QList<GTest*>& >(this->children()));
+	QList<GTest*>::iterator it = runList.begin();
+	while(it != runList.end()) {
+		(*it)->run();
+		++it;
+	}
 }
 

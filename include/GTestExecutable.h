@@ -108,6 +108,7 @@ public:
 //METHODS:
 	void produceListing();
 
+	virtual void run();
 };
 
 Q_DECLARE_METATYPE(GTestExecutable*);

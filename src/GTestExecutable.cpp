@@ -99,7 +99,7 @@ void GTestExecutable::parseListing(int /*exitCode*/, QProcess::ExitStatus exitSt
 	standardOutput.open(QBuffer::ReadOnly);
 	while(standardOutput.canReadLine()) {
 		line = standardOutput.readLine();
-		line.resize(line.size()-1);	//remove \n
+		line.resize(line.size()-1);	//remove '\n'
 		if(line.endsWith('.')) {	//this means its a test suite name
 			name = line.left(line.size()-1);	//get the name without the '.'
 			testSuite = findChild<GTestSuite*>(name);
@@ -172,6 +172,7 @@ void GTestExecutable::runTest() {
 					 this, SLOT(standardOutputAvailable()));
 	QObject::connect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
 					 this, SLOT(parseTestResults(int, QProcess::ExitStatus)));
+	//! \todo Only run tests in the runList.
 	gtest->start(objectName(), QStringList() << "--gtest_output=xml:./test_detail_1337.xml");
 	//unlock the processLock in the parseTestResults slot
 }
@@ -296,6 +297,16 @@ GTestExecutable::STATE GTestExecutable::getState() {
 		state = INSUFFICIENT_PRIVILEGES;
 	}
 	return state;
+}
+
+/*! \brief Sets all tests in the executable to be run.
+ *
+ * This test should be run by right-clicking and selecting run on
+ * a test suite object.
+ */
+void GTestExecutable::run() {
+	GTestSuite::run();
+	runOnSignal = true;
 }
 
 
