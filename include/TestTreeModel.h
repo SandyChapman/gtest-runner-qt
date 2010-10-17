@@ -23,7 +23,9 @@
 #include <QSharedPointer>
 #include <QVariant>
 
-class TestTreeItem;
+#include "TreeModel.h"
+
+class TreeItem;
 class GTest;
 class GTestExecutable;
 
@@ -33,7 +35,7 @@ class GTestExecutable;
  * are each held as branches of an invisible root node (which conveniently
  * holds the model's header data).
  */
-class TestTreeModel : public QAbstractItemModel {
+class TestTreeModel : public TreeModel {
 
 	Q_OBJECT;
 
@@ -50,16 +52,11 @@ private:
 	};
 
 	QHash<QString, QSharedPointer<GTestExecutable> > testExeHash; //!< A hash of all loaded gtest executables.
-	QHash<GTest*, TestTreeItem*> itemTestHash; //!< A hash that relates unit tests to tree items
+	QHash<GTest*, TreeItem* > itemTestHash; //!< A hash that relates unit tests to tree items
 
 	template <class T, class U>
-	TestTreeItem* createNewTreeItem(T* parent, U* test);
-	bool setCheckState(TestTreeItem* item, Qt::CheckState state, int recursionDirection = (TO_PARENT | TO_CHILDREN));
-
-signals:
-	void aboutToRunTests();
-	void runningTests();
-	void resettingRunStates();
+	TreeItem* createNewTreeItem(T parent, U* test);
+	bool setCheckState(TreeItem* item, Qt::CheckState state, int recursionDirection = (TO_PARENT | TO_CHILDREN));
 
 private slots:
 	void updateListing(GTestExecutable* gtest);
@@ -67,6 +64,11 @@ private slots:
 	void populateTestResult();
 	void removeSenderItem();
 	void runTests();
+
+signals:
+	void aboutToRunTests();
+	void runningTests();
+	void resettingRunStates();
 
 public:
 
@@ -79,21 +81,9 @@ public:
 
 	TestTreeModel(QObject* parent = 0);
 	~TestTreeModel();
-
-	int columnCount(const QModelIndex& parent = QModelIndex()) const;
-	QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
-	Qt::ItemFlags flags(const QModelIndex& index) const;
-	QVariant headerData(int secton, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-	QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
-	bool insertItem(TestTreeItem* item, int row, TestTreeItem* parent);
-	bool insertItems(const QList<TestTreeItem*> items, int row, TestTreeItem* parent);
-	QModelIndex parent(const QModelIndex& index) const;
-	int rowCount(const QModelIndex& parent = QModelIndex()) const;
-	bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole);
 	ERROR addDataSource(const QString filepath);
-
-private:
-	TestTreeItem* rootItem; //!< This is the root of the data model.
+	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+	virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole);
 
 };
 

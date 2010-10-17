@@ -17,7 +17,10 @@
 #ifndef GTESTRESULTS_H_
 #define GTESTRESULTS_H_
 
+#include <QSharedPointer>
 #include <QStringList>
+
+#include "MetaItem.h"
 
 /* \brief This class logically represents the results of running a unit test.
  *
@@ -66,6 +69,7 @@ public:
 	QStringList getFailureMessages() const;
 
 	virtual GTestResults* getTestResults(QString name);
+	virtual MetaItem* createMetaItem() const;
 
 };
 

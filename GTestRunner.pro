@@ -19,7 +19,10 @@ HEADERS += include/GTestSuiteResults.h \
     include/GTestParser.h \
     include/GTestRunner.h \
     include/TestTreeModel.h \
-    include/TestTreeItem.h 
+    include/MetaModel.h \
+    include/MetaItem.h \
+    include/TreeModel.h \
+    include/TreeItem.h
 SOURCES += src/GTestResults.cpp \
     src/GTestSuiteResults.cpp \
     src/GTestSuite.cpp \
@@ -30,7 +33,10 @@ SOURCES += src/GTestResults.cpp \
     src/GTestParser.cpp \
     src/GTestRunner.cpp \
     src/TestTreeModel.cpp \
-    src/TestTreeItem.cpp 
+    src/MetaModel.cpp \
+    src/MetaItem.cpp \
+    src/TreeModel.cpp \
+    src/TreeItem.cpp
 FORMS += resources/gtestrunner.ui
 UI_HEADERS_DIR = include
 UI_SOURCES_DIR = src

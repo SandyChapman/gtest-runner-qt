@@ -67,15 +67,19 @@ GTestExecutableResults* GTestParser::parse() {
 	GTestResults* testResults;
 	//! \bug \todo Fix the bug in here causing "premature end-of-file" error.
 	while(!xmlStream.atEnd()) {
-		while(!xmlStream.readNextStartElement() && !xmlStream.hasError() && !xmlStream.atEnd()) {}
+		while(!xmlStream.readNextStartElement() && !xmlStream.hasError() && !xmlStream.atEnd()) { qDebug() << xmlStream.name(); }
 		attributes = xmlStream.attributes();
 		if(xmlStream.name() == "testcase") {
 			testResults = new GTestResults(attributes.value("name").toString());
 			testResults->setRunningTime(attributes.value("time").toString().toUInt());
 			testResults->setStatus(attributes.value("status").toString());
-			while((xmlStream.readNext(), xmlStream.name()) == "failure") {
-				attributes = xmlStream.attributes();
-				testResults->addFailureMessage(attributes.value("message").toString());
+			xmlStream.readNext();
+			qDebug() << xmlStream.name();
+			while(xmlStream.name() != "testcase") { //no closing </testcase> yet
+				if(xmlStream.isCDATA())
+					testResults->addFailureMessage(xmlStream.text().toString());
+				xmlStream.readNext();
+				qDebug() << xmlStream.name();
 			}
 			testSuiteResults->addTestResults(testResults);
 		}

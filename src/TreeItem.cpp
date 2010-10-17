@@ -1,5 +1,5 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * TestTreeItem.cpp - Created on 2010-08-29
+ * TreeItem.cpp - Created on 2010-08-29
  *
  * Copyright (C) 2010 Sandy Chapman
  *
@@ -14,7 +14,14 @@
  * Boston, MA 02111-1307 USA
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-#include "TestTreeItem.h"
+#include "TreeItem.h"
+
+/*! \brief Constructor
+ *
+ */
+TreeItem::TreeItem()
+ : childItems(), itemData(), parentItem(0)
+{}
 
 /*! \brief Constructor
  *
@@ -22,23 +29,21 @@
  *             between a Qt::ItemDataRole and the QVariant with the data.
  * \param parent The parent of this item.
  */
-TestTreeItem::TestTreeItem(QList<QMap<int, QVariant> >& data, TestTreeItem* parent)
+TreeItem::TreeItem(QList<QMap<int, QVariant> >& data, TreeItem* parent)
 : childItems(), itemData(data), parentItem(parent)
 {}
 
 /*! \brief Destructor
  *
  */
-TestTreeItem::~TestTreeItem()
-{
-	qDeleteAll(childItems);
-}
+TreeItem::~TreeItem()
+{}
 
 /*! \brief Appends the child to the end of this item.
  *
  * \param child A pointer to the child to append.
  */
-void TestTreeItem::appendChild(TestTreeItem *child) {
+void TreeItem::appendChild(TreeItem* child) {
 	childItems.append(child);
 }
 
@@ -47,7 +52,7 @@ void TestTreeItem::appendChild(TestTreeItem *child) {
  * \param role A value from Qt::ItemDataRole specifying a model role.
  * \return A variant holding the data.
  */
-QVariant TestTreeItem::data(int column, int role) const {
+QVariant TreeItem::data(int column, int role) const {
 	if(column >= itemData.length())
 		return QVariant();
 	return itemData.at(column).value(role);
@@ -57,7 +62,7 @@ QVariant TestTreeItem::data(int column, int role) const {
  *
  * \return A pointer to the parent of this item.
  */
-TestTreeItem* TestTreeItem::parent() {
+TreeItem* TreeItem::parent() {
 	return parentItem;
 }
 
@@ -65,11 +70,14 @@ TestTreeItem* TestTreeItem::parent() {
  *
  * The row is relative to the parent. The row this item is in,
  * is the index of the item in the children of its parent.
- * \return The row this item is in, or if it has no parent (the rootItem) 0.
+ * \return The row this item is in, or if it has no parent (the rootItem. 0.
  */
-int TestTreeItem::row() const {
-	if(parentItem)
-		return parentItem->childItems.indexOf(const_cast<TestTreeItem*>(this));
+int TreeItem::row() const {
+	if(parentItem) {
+		TreeItem* item(const_cast<TreeItem*>(this));
+		int row = parentItem->childItems.indexOf(item);
+		return row;
+	}
 	return 0;
 }
 
@@ -79,10 +87,21 @@ int TestTreeItem::row() const {
  * \param role The role specified from Qt::ItemDataRole.
  * \return true if the data was set, false otherwise.
  */
-bool TestTreeItem::setData(const QVariant& value, int col, int role) {
+bool TreeItem::setData(const QVariant& value, int col, int role) {
 	while(col >= itemData.length())
 		itemData.append(QMap<int, QVariant>());
 	itemData[col].insert(role, value);
+	return true;
+}
+
+/*! \brief Sets the data for the given role to the variant 'value'.
+ *
+ * \param value The value to set for the given role.
+ * \param role The role specified from Qt::ItemDataRole.
+ * \return true if the data was set, false otherwise.
+ */
+bool TreeItem::setData(const QList<QMap<int, QVariant> >& data) {
+	itemData = data;
 	return true;
 }
 
@@ -94,8 +113,8 @@ bool TestTreeItem::setData(const QVariant& value, int col, int role) {
  * \param role The role to match (one of Qt::ItemDataRole).
  * \return The child the holds the value for the given role, or null if not found.
  */
-TestTreeItem* TestTreeItem::findChild(const QVariant& value, int role) const {
-	QList<TestTreeItem*>::const_iterator it = childItems.begin();
+TreeItem* TreeItem::findChild(const QVariant& value, int role) const {
+	QList<TreeItem* >::const_iterator it = childItems.begin();
 	while(it != childItems.end()) {
 		if((*it)->data(0, role) == value)
 			return *it;
