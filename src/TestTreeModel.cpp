@@ -18,6 +18,7 @@
 #include <QDebug>
 #include <QMap>
 #include <QMessageBox>
+#include <QModelIndexList>
 #include <QSharedPointer>
 #include <QStack>
 
@@ -34,7 +35,8 @@ TestTreeModel::TestTreeModel(QObject* parent)
 {
 	QList<QMap<int, QVariant> > data;
 	QMap<int, QVariant> datum;
-	datum.insert(0, "Test Name");
+	datum.insert(Qt::DisplayRole, "Test Name");
+	datum.insert(Qt::MetaDataRole, "Test Results");
 	data.append(datum);
 	rootItem.setData(data);
 }
@@ -58,6 +60,8 @@ TestTreeModel::ERROR TestTreeModel::addDataSource(const QString filepath) {
 	case GTestExecutable::VALID:
 		QObject::connect(newTest.data(), SIGNAL(listingReady(GTestExecutable*)),
 						 this, SLOT(updateListing(GTestExecutable*)));
+		QObject::connect(this, SIGNAL(aboutToRunTests()),
+						 newTest.data(), SLOT(resetRunState()));
 		//We insert it so that it doesn't auto-delete from the shared ptr.
 		//Will probably be useful later on when we want to save settings.
 		testExeHash.insert(newTest->objectName(), newTest);
@@ -97,8 +101,6 @@ TreeItem* TestTreeModel::createNewTreeItem(T parent, U* test) {
 
 	TreeItem* newTreeItem(new TreeItem(data, parent));
 	itemTestHash.insert(test, newTreeItem);
-	QObject::connect(test, SIGNAL(destroyed()),
-					 this, SLOT(removeSenderItem()));
 	QObject::connect(test, SIGNAL(testResultsReady()),
 					 this, SLOT(populateTestResult()));
 	return newTreeItem;
@@ -134,7 +136,7 @@ void TestTreeModel::updateListing(GTestExecutable* gtest) {
 		QObject::connect(this, SIGNAL(runningTests()),
 						 gtest, SLOT(runTest()));
 		QObject::connect(this, SIGNAL(resettingRunStates()),
-						 gtest, SLOT(resetRunState()));
+										 gtest, SLOT(resetRunState()));
 	}
 	//Get which of the tests are new. This should be all of them the first
 	//time through for this test.
@@ -174,6 +176,7 @@ void TestTreeModel::updateListing(GTestExecutable* gtest) {
 	emit layoutChanged();
 }
 
+						 
 /*! \brief Populates a test result into the test tree.
  *
  * This function takes a QObject* which should be a TestTreeWidgetItem.
@@ -224,17 +227,6 @@ void TestTreeModel::populateTestResult() {
 	treeItem->setData(var, 0, Qt::MetaDataRole);
 }
 
-/*! \brief A slot that removes the signal's sender from the data model.
- *
- * The sender must be a GTest or this function does nothing.
- */
-//! \todo Investigate whether we can give a persistent index to a GTest.
-void TestTreeModel::removeSenderItem() {
-	GTest* test = static_cast<GTest*>(sender());
-	if(!test)
-		return; //! \todo exception management stuff here
-}
-
 /*! \brief Runs all tests that are checked.
  *
  * This is the only way tests results are populated into the model.
@@ -267,7 +259,6 @@ void TestTreeModel::runTests() {
 
 	emit runningTests();
 }
-
 
 /*! \brief Updates all the listings for every GTestExecutable.
  *
@@ -388,4 +379,25 @@ bool TestTreeModel::setCheckState(TreeItem* item, Qt::CheckState newState, int r
 	return retval;
 }
 
-
+void TestTreeModel::removeSelectedTests() {
+	QModelIndexList selectedIndexes = this->selectionModel->selectedIndexes();
+	QModelIndexList::iterator it = selectedIndexes.begin();
+	for(; it != selectedIndexes.end(); ++it) {
+		TreeItem* item = static_cast<TreeItem*>(it->internalPointer());
+		if(!item)
+			continue;
+		GTest* gtest = item->data(0, Qt::UserRole).value<GTest*>();
+		GTestExecutable* gtestExe = dynamic_cast<GTestExecutable*>(gtest);
+		if(!gtestExe) {
+			QWidget* parent = 0;
+			if(QObject::parent()->isWidgetType())
+				parent = static_cast<QWidget*>(QObject::parent());
+			QMessageBox::information(parent, "Info", "Currently, only top level tests can be removed.", QMessageBox::Ok);
+			continue;
+		}
+		this->beginRemoveRows(this->createIndex(0, 0, &rootItem), item->row(), item->row());
+		item->parent()->removeChild(item);
+		this->testExeHash.remove(gtest->objectName());
+		this->endRemoveRows();
+	}
+}

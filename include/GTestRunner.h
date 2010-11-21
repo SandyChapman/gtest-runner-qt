@@ -52,7 +52,6 @@ public:
     ~GTestRunner();
 
 signals:
-	void aboutToRunTests(); //!< Sends a signal to any listeners to prepare for test runs.
 	void runningTests();	//!< Sends a signal when the processes have been launched.
 
 public slots:

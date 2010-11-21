@@ -56,30 +56,34 @@ GTestRunner::~GTestRunner()
  * to set up as well.
  */
 void GTestRunner::setup() {
-	testModel = new TestTreeModel();
+	testModel = new TestTreeModel(this);
 	testTree->setModel(testModel);
 	testTree->setSelectionBehavior(QAbstractItemView::SelectRows);
 	testTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
-	metaModel = new MetaModel();
+	metaModel = new MetaModel(this);
 	metaModel->setSelectionModel(testTree->selectionModel());
 	metaModel->setItemModel(testModel);
 	resultsTree->setModel(metaModel);
+	testModel->setSelectionModel(testTree->selectionModel());
 
 
-	QObject::connect(aboutQtAction, SIGNAL(triggered()),
+	QObject::connect(this->aboutQtAction, SIGNAL(triggered()),
 					 qApp, SLOT(aboutQt()));
 
-	QObject::connect(importTestAction, SIGNAL(triggered()),
+	QObject::connect(this->importTestAction, SIGNAL(triggered()),
 					 this, SLOT(addTests()));
 
-	QObject::connect(runTestsAction, SIGNAL(triggered()),
+	QObject::connect(this->runTestsAction, SIGNAL(triggered()),
 					 testModel, SLOT(runTests()));
 
-	QObject::connect(refreshAction, SIGNAL(triggered()),
-					 testTree, SLOT(updateAllListings()));
+	QObject::connect(this->refreshAction, SIGNAL(triggered()),
+					 testModel, SLOT(updateAllListings()));
 
-	QObject::connect(removeTestsAction, SIGNAL(triggered()),
-					 testTree, SLOT(removeSelectedTests()));
+	QObject::connect(this->removeTestsAction, SIGNAL(triggered()),
+					 testModel, SLOT(removeSelectedTests()));
+
+	QObject::connect(this->exitAction, SIGNAL(triggered()),
+					 qApp, SLOT(quit()));
 }
 
 /*! \brief Slot to prompt a dialog to have the user add unit tests to run.

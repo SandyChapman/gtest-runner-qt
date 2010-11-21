@@ -55,15 +55,14 @@ public:
 	int row() const;
 	bool setData(const QVariant& value, int column, int role);
 	bool setData(const QList<QMap<int, QVariant> >& data);
+	void setParent(TreeItem* parent);
 
 
 private:
 	QList<TreeItem* > childItems; //!< The children of the TreeItem
 	//!< The data for this item, first indexed by column, then by role.
 	QList<QMap<int, QVariant> > itemData;
-	TreeItem* parentItem;        //!< The parent of this item.
-
-	void setParent(TreeItem* parent);
+	TreeItem* parentItem;        //!< The parent of this item.	
 };
 
 Q_DECLARE_METATYPE(TreeItem*);

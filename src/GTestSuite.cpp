@@ -37,10 +37,7 @@ GTestSuite::GTestSuite(QObject* parent, QString name)
  */
 GTestSuite::GTestSuite(GTestSuite* parent, QString name)
 : GTest(parent, name), runList()
-{
-	if(parent)
-		parent->addTest(this);
-}
+{}
 
 /*! \brief  Destructor
  */
@@ -62,8 +59,10 @@ void GTestSuite::receiveRunRequest(QString testName, QString testCase) {
 	GTest* test = static_cast<GTest*>(QObject::sender());
 	if(!runList.contains(test))
 		runList.append(test);
-	if(testCase.isEmpty())
-		emit requestingRun(testName, objectName());
+	if(testCase.isEmpty()) {
+		QString objectName = this->objectName();
+		emit requestingRun(testName, objectName);
+	}
 }
 
 /*! \brief Receives the test results from the parent GTestExecutable object.
@@ -74,7 +73,6 @@ void GTestSuite::receiveRunRequest(QString testName, QString testCase) {
  * table so retrieve should be approximately O(1).
  */
 void GTestSuite::receiveTestResults(GTestResults* testSuiteResults) {
-	this->testResults = testSuiteResults;
 	QList<GTest*>::iterator it = runList.begin();
 	GTestResults* testResults;
 	while(it != runList.end()) {
@@ -83,6 +81,7 @@ void GTestSuite::receiveTestResults(GTestResults* testSuiteResults) {
 		++it;
 	}
 	runList.clear();
+	GTest::receiveTestResults(testSuiteResults);
 	emit testResultsReady();
 }
 

@@ -14,6 +14,8 @@
  * Boston, MA 02111-1307 USA
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <QItemSelectionModel>
+
 #include "TreeModel.h"
 
 /*! \brief Constructor
@@ -180,6 +182,10 @@ bool TreeModel::setData(const QModelIndex& index, const QVariant& var, int role)
 		return false;
 	emit dataChanged(index, index);
 	return true;
+}
+
+void TreeModel::setSelectionModel(QItemSelectionModel *model) {
+	this->selectionModel = model;
 }
 
 

@@ -21,6 +21,8 @@
 
 #include "TreeItem.h"
 
+class QItemSelectionModel;
+
 class TreeModel : public QAbstractItemModel {
 
 	Q_OBJECT;
@@ -29,7 +31,8 @@ signals:
 	void metaDataAboutToBeChanged(const QModelIndex& index);
 
 protected:
-	TreeItem rootItem; //<! The root of the data model. It's data is shown in the header.
+	TreeItem rootItem; //!< The root of the data model. It's data is shown in the header.
+	QItemSelectionModel* selectionModel; //!< A model to identify selected items in this model.
 
 public:
 	TreeModel(QObject* parent = 0);
@@ -45,6 +48,8 @@ public:
 	virtual int columnCount(const QModelIndex& parent = QModelIndex()) const;
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const;
 	virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole);
+	virtual void setSelectionModel(QItemSelectionModel* model);
+
 };
 
 #endif // TREEMODEL_H

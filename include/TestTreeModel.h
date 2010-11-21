@@ -62,13 +62,12 @@ private slots:
 	void updateListing(GTestExecutable* gtest);
 	void updateAllListings();
 	void populateTestResult();
-	void removeSenderItem();
+	void removeSelectedTests();
 	void runTests();
 
 signals:
-	void aboutToRunTests();
+	void aboutToRunTests(); //!< Sends a signal to any listeners to prepare for test runs.
 	void runningTests();
-	void resettingRunStates();
 
 public:
 

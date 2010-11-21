@@ -14,6 +14,7 @@
  * Boston, MA 02111-1307 USA
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
+#include <QItemSelectionModel>
 #include <QSharedPointer>
 #include <QStack>
 
@@ -22,8 +23,8 @@
 /*! \brief Constructor
  *
  */
-MetaModel::MetaModel()
- : selectionModel(0), itemModel(0)
+MetaModel::MetaModel(QObject* parent)
+ : TreeModel(parent), itemModel(0)
 {}
 
 /*! \brief Destructor
@@ -62,6 +63,13 @@ void MetaModel::setItemModel(TreeModel* model) {
 		QObject::disconnect(this->itemModel, SIGNAL(metaDataAboutToBeChanged(const QModelIndex&)),
 							this, SLOT(removeItem(const QModelIndex&)));
 	this->itemModel = model;
+	//Set up the header data meta info.
+	QList<QMap<int, QVariant> > data;
+	QMap<int, QVariant> datum;
+	datum.insert(Qt::DisplayRole, model->headerData(0, Qt::Horizontal, Qt::MetaDataRole));
+	data.append(datum);
+	this->rootItem.setData(data);
+
 	QObject::connect(model, SIGNAL(metaDataAboutToBeChanged(const QModelIndex&)),
 					 this, SLOT(removeItem(const QModelIndex&)));
 }

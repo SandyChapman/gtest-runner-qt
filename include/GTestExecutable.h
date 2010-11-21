@@ -64,9 +64,8 @@ private:
 	QBuffer standardError;	//!< The buffer to hold the stderr text.
 	QSet<QString> listingSet;//!< The set of unit test suites provided.
 	QSet<QString> oldListingSet;//!< The set of elements prior to an update.
-	QStringList testsToRun;	//!< The list of tests to run.
-	bool runOnSignal;		/*!< A flag to indicate whether a process should be
-							 *   run when the runTest slot is called */
+	QStringList testFilter; /*! A list of tests to add to the test filter command line
+							 * arguments. */
 
 	QProcess::ProcessError error;	//!< The state of the QProcess after its run
 	QProcess::ExitStatus exitStatus;//!< The exit status of the QProcess
@@ -79,20 +78,19 @@ signals:
 	void listingReady(GTestExecutable* sender); //!< Sends notification that a new listing has been received.
 
 public slots:
-	void standardErrorAvailable();
-	void standardOutputAvailable();
 	void executableFinished(int exitCode, QProcess::ExitStatus exitStatus);
-	void runTest();
 	void parseListing(int exitCode, QProcess::ExitStatus exitStatus);
 	void parseTestResults(int exitCode, QProcess::ExitStatus exitStatus);
 	void resetRunState();
+	void runTest();
+	void standardErrorAvailable();
+	void standardOutputAvailable();
+	void receiveRunRequest(QString testName, QString testCase = QString());
 
 public:
-
 	GTestExecutable(QObject* parent = 0, QString executablePath = QString());
 	virtual ~GTestExecutable();
 
-//GETS:
 	QProcess::ProcessError getError() const;
 	QString getExecutablePath() const;
 	int getExitCode() const;
@@ -100,14 +98,10 @@ public:
 	const QSet<QString>& getListing() const;
 	const QSet<QString>& getOldListing() const;
 	STATE getState();
-	void setRunFlag(bool runOnSignal);
 
-//SETS:
 	void setExecutablePath(QString executablePath);
 
-//METHODS:
 	void produceListing();
-
 	virtual void run();
 };
 
@@ -167,20 +161,5 @@ inline int GTestExecutable::getExitCode() const { return exitCode; }
  * \todo TODO::set the return value of this function to return STATE
  */
 inline void GTestExecutable::setExecutablePath(QString executablePath) { setObjectName(executablePath); }
-
-/*! \brief Sets the flag that determines whether this GTestExecutable
- *  responds to the runTest() slot.
- *
- *  \param runOnSignal whether the flag should allow the signal (true), or not.
- */
-inline void GTestExecutable::setRunFlag(bool runOnSignal) { this->runOnSignal = runOnSignal; }
-
-/*! \brief Slot that resets the run state of this executable.
- *
- * Resetting the executable prepares it to be run again and produce new
- * test results.
- * \todo TODO::This should be clearing the buffers, runList, etc.
- */
-inline void GTestExecutable::resetRunState() { setRunFlag(false); }
 
 #endif /* GTESTEXECUTABLE_H_ */

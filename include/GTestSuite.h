@@ -66,8 +66,8 @@ Q_DECLARE_METATYPE(GTestSuite*);
  * propagate the signal to the GTestExecutable for running.
  */
 inline void GTestSuite::addTest(GTest* test) {
-	QObject::connect(test, SIGNAL(requestingRun(QString)),
-					 this, SLOT(receiveRunRequest(QString)));
+	QObject::connect(test, SIGNAL(requestingRun(QString, QString)),
+					 this, SLOT(receiveRunRequest(QString, QString)));
 }
 
 /*! \brief Removes a test from the GTestSuite object.
@@ -75,8 +75,8 @@ inline void GTestSuite::addTest(GTest* test) {
  * This dismantles the signal/slot relation set up in addTest.
  */
 inline void GTestSuite::removeTest(GTest* test) {
-	QObject::disconnect(test, SIGNAL(requestingRun(QString)),
-					 this, SLOT(receiveRunRequest(QString)));
+	QObject::disconnect(test, SIGNAL(requestingRun(QString, QString)),
+					 this, SLOT(receiveRunRequest(QString, QString)));
 }
 
 

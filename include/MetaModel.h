@@ -17,19 +17,18 @@
 #ifndef TESTRESULTSMODEL_H
 #define TESTRESULTSMODEL_H
 
+#include <QItemSelection>
+
 #include "MetaItem.h"
 #include "TreeModel.h"
 
-#include <QHash>
-#include <QItemSelection>
-#include <QItemSelectionModel>
+class QItemSelectionModel;
 
 class MetaModel : public TreeModel {
 
 	Q_OBJECT;
 
 private:
-	QItemSelectionModel* selectionModel; //!< The selection model to determine which elements are shown.
 	QItemSelection currentlySelected;    //!< The currently selected model indices.
 	QAbstractItemModel* itemModel;       //!< The item model whose meta data we show
 
@@ -40,10 +39,10 @@ public slots:
 
 public:
 
-	MetaModel();
+	MetaModel(QObject* parent = 0);
 	virtual ~MetaModel();
 
-	void setSelectionModel(QItemSelectionModel* model);
+	virtual void setSelectionModel(QItemSelectionModel* model);
 	void setItemModel(TreeModel* model);
 };
 

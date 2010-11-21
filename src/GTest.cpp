@@ -61,6 +61,8 @@ GTest::~GTest() {
  * 					  an error in processing.
  */
 void GTest::receiveTestResults(GTestResults* testResults) {
+	if(this->testResults != 0)
+		delete this->testResults;
 	this->testResults = testResults;
 	emit testResultsReady();
 }

@@ -30,7 +30,7 @@
 GTestExecutable::GTestExecutable(QObject* parent, QString filePath)
 : GTestSuite(parent, filePath), state(VALID), processLock(),
   outputLock(), gtest(0), standardOutput(), standardError(),
-  listingSet(), oldListingSet(), testsToRun(), runOnSignal(false)
+  listingSet(), oldListingSet()
 {
 	getState();
 }
@@ -161,7 +161,7 @@ void GTestExecutable::parseListing(int /*exitCode*/, QProcess::ExitStatus exitSt
  */
 void GTestExecutable::runTest() {
 	//Check our state, and whether we're listening to run signals.
-	if(this->state != VALID || !this->runOnSignal)
+	if(this->state != VALID || this->runList.isEmpty())
 		return;
 	//We lock so that any attempt to try to produce a listing
 	//or run a test will block until we're done with what we're
@@ -172,9 +172,19 @@ void GTestExecutable::runTest() {
 					 this, SLOT(standardOutputAvailable()));
 	QObject::connect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
 					 this, SLOT(parseTestResults(int, QProcess::ExitStatus)));
+
+	QString filterString = "--gtest_filter=";
+	QString string;
+	foreach(string, testFilter)
+		filterString.append(string).append(":");
+	filterString.chop(1);
+
+	QStringList commandLineParameters;
+	commandLineParameters << "--gtest_output=xml:./test_detail_1337.xml";
+	commandLineParameters << filterString;
+
 	//! \todo Only run tests in the runList.
-	gtest->start(objectName(), QStringList() << "--gtest_output=xml:./test_detail_1337.xml");
-	//unlock the processLock in the parseTestResults slot
+	gtest->start(objectName(), commandLineParameters);
 }
 
 /*! \brief Parses the test results .xml file produced by the QProcess.
@@ -305,8 +315,26 @@ GTestExecutable::STATE GTestExecutable::getState() {
  * a test suite object.
  */
 void GTestExecutable::run() {
+	//! \todo Implement this function.
 	GTestSuite::run();
-	runOnSignal = true;
 }
 
+/*! \brief A slot that receives a run request from a child GTestSuite.
+ *
+ * Receives a run request from a child test. Adds the test to its runlist.
+ * If received by a GTestSuite, this will emit a request with its name as
+ * the testCase.
+ * \param testName The name of the GTest to run.
+ * \param testCase The name of the GTestSuite to run. Note that
+ * 				   this is 'null' if sent from a GTest, and is the
+ * 				   name of the GTestSuite if received in a GTestExecutable.
+ */
+void GTestExecutable::receiveRunRequest(QString testName, QString testCase) {
+	GTestSuite::receiveRunRequest(testName, testCase);
+	this->testFilter << testCase + "." + testName;
+}
 
+void GTestExecutable::resetRunState() {
+	this->runList.clear();
+	this->testFilter.clear();
+}
