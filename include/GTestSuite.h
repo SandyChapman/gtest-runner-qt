@@ -46,8 +46,8 @@ public slots:
 	virtual void receiveRunRequest(QString testName, QString testCase = QString());
 
 public:
-	GTestSuite(QObject* parent = 0, QString name = QString());
-	GTestSuite(GTestSuite* parent = 0, QString name = QString());
+    GTestSuite(QObject* parent, QString name = QString());
+    GTestSuite(GTestSuite* parent, QString name = QString());
 	virtual ~GTestSuite();
 	void addTest(GTest* test);
 	void removeTest(GTest* test);

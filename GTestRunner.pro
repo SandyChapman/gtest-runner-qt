@@ -7,7 +7,7 @@ CONFIG(debug, debug|release) {
 else {
 	TARGET = gtestrunner
 }
-QT += core gui xml
+QT += core gui widgets xml
 INCLUDEPATH += include
 HEADERS += include/GTestSuiteResults.h \
     include/GTestResults.h \

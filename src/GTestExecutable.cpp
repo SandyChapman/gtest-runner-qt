@@ -61,12 +61,11 @@ void GTestExecutable::produceListing() {
 	if(getState() != VALID)
 		return; //! \todo throw error here?
 	//! \todo Check if the gtest file has changed, and preempt here if unchanged.
-	processLock.lock();
-	gtest = new QProcess();
-	QObject::connect(gtest, SIGNAL(readyReadStandardOutput()),
-					 this, SLOT(standardOutputAvailable()));
-	QObject::connect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
-					 this, SLOT(executableFinished(int, QProcess::ExitStatus)));
+
+    setUpExecutable();
+
+    QObject::connect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
+                     this, SLOT(finishedListing(int, QProcess::ExitStatus)));
 	QObject::connect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
 					 this, SLOT(parseListing(int, QProcess::ExitStatus)));
 	gtest->start(objectName(), QStringList() << "--gtest_list_tests");
@@ -94,24 +93,33 @@ void GTestExecutable::parseListing(int /*exitCode*/, QProcess::ExitStatus exitSt
 	oldListingSet = listingSet; //copy old set, to find elements to remove
 	QString name;
 	QString line;
-	GTestSuite* testSuite;
+    GTestSuite* testSuite = 0;
 	GTest* test;
 	standardOutput.open(QBuffer::ReadOnly);
 	while(standardOutput.canReadLine()) {
 		line = standardOutput.readLine();
-		line.resize(line.size()-1);	//remove '\n'
-		if(line.endsWith('.')) {	//this means its a test suite name
-			name = line.left(line.size()-1);	//get the name without the '.'
+        name = line.trimmed();	//remove  front and back white characters.
+        if(name.endsWith('.')) {	//this means its a test suite name
+            name.chop(1);	//get the name without the '.'
 			testSuite = findChild<GTestSuite*>(name);
 			if(!testSuite)	//if it doesn't already exist, make one
 				testSuite = new GTestSuite(this, name);
 			listingSet << name;	//add it to our new listing set
 		}
 		else {
-			//We should always run into 'testsuitename.'
-			//before we hit a unit test name.
-			Q_ASSERT(testSuite != 0);
-			name = line.right(line.size()-2); //test name is prepended with 2 spaces
+            //We should always run into 'testsuitename.'
+            //before we hit a unit test name.
+            Q_ASSERT(testSuite != 0);
+
+            //Parametrized test have a comment that start with #
+            //We remove it here, only the name will be in the result XML.
+            int indexOf = name.indexOf("#");
+            if(0 < indexOf)
+            {
+                name.truncate(indexOf);
+                name = name.trimmed();
+            }
+
 			test = testSuite->findChild<GTest*>(name);
 			if(!test)	//if it doesn't already exist, make one
 				test = new GTest(testSuite, name);
@@ -163,24 +171,21 @@ void GTestExecutable::runTest() {
 	//Check our state, and whether we're listening to run signals.
 	if(this->state != VALID || this->runList.isEmpty())
 		return;
-	//We lock so that any attempt to try to produce a listing
-	//or run a test will block until we're done with what we're
-	//doing here.
-	processLock.lock();
-	gtest = new QProcess();
-	QObject::connect(gtest, SIGNAL(readyReadStandardOutput()),
-					 this, SLOT(standardOutputAvailable()));
-	QObject::connect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
-					 this, SLOT(parseTestResults(int, QProcess::ExitStatus)));
 
-	QString filterString = "--gtest_filter=";
+    setUpExecutable();
+
+    QObject::connect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
+                     this, SLOT(finishedTesting(int, QProcess::ExitStatus)));
+
+    QString filterString = "--gtest_filter=";
 	QString string;
-	foreach(string, testFilter)
+	foreach(string, testFilter){
 		filterString.append(string).append(":");
+    }
 	filterString.chop(1);
 
 	QStringList commandLineParameters;
-	commandLineParameters << "--gtest_output=xml:./test_detail_1337.xml";
+    commandLineParameters << "--gtest_output=xml:./test_detail_1337.xml";
 	commandLineParameters << filterString;
 
 	//! \todo Only run tests in the runList.
@@ -192,10 +197,10 @@ void GTestExecutable::runTest() {
  * This function opens the .xml file produced by the gtest process and parses
  * its contents. It uses the GTestParser
  */
-void GTestExecutable::parseTestResults(int exitCode, QProcess::ExitStatus exitStatus) {
+void GTestExecutable::finishedTesting(int exitCode, QProcess::ExitStatus exitStatus) {
 	QObject::disconnect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
-						this, SLOT(parseTestResults(int, QProcess::ExitStatus)));
-	processLock.unlock();
+                        this, SLOT(finishedTesting(int, QProcess::ExitStatus)));
+    processLock.unlock();
 	if(exitStatus != QProcess::NormalExit)
 		return;
 	QFile xmlFile("./test_detail_1337.xml");
@@ -205,12 +210,14 @@ void GTestExecutable::parseTestResults(int exitCode, QProcess::ExitStatus exitSt
 	QList<GTest*>::iterator it = this->runList.begin();
 	GTestResults* testSuiteResults;
 	while(it != this->runList.end()) {
-		testSuiteResults = testResults->getTestResults((*it)->objectName());
-		(*it)->receiveTestResults(testSuiteResults);
+        testSuiteResults = testResults->getTestResults((*it)->objectName());
+        if(testSuiteResults){
+            (*it)->receiveTestResults(testSuiteResults);
+        }
 		++it;
 	}
 	runList.clear();
-	executableFinished(exitCode, exitStatus);
+    cleanupExecutable(exitCode, exitStatus);
 	emit testResultsReady();
 }
 
@@ -253,22 +260,42 @@ void GTestExecutable::standardErrorAvailable() {
  * \see GTestExecutable::standardOutputAvailable()
  */
 void GTestExecutable::readExecutableOutput(QBuffer& standardChannel) {
-	//Don't expect it to be that large,
-	//but whatever, who doesn't have a MB
-	//or two lying around?
-	const int BUF_SIZE = 1024;
-	char buffer[BUF_SIZE];
-	qint64 lineLength;
-	standardChannel.open(QBuffer::WriteOnly);
-	while(!gtest->atEnd()) {
-		while(gtest->canReadLine()) {
-			lineLength = gtest->readLine(buffer, BUF_SIZE);
-			if(lineLength > 0 && lineLength <= BUF_SIZE) {
-				standardChannel.write(buffer);
-			}
-		}
+    // Collect evereything using QByteArray.
+	while(gtest->canReadLine()) {
+            standardChannel.write(gtest->readLine());
 	}
-	standardChannel.close();
+}
+
+/*! \brief Slot to be called when the QProcess has finished listing the tests.
+ *
+ * This function is called after a QProcess has finished generating a listing.
+ */
+void GTestExecutable::finishedListing(int exitCode, QProcess::ExitStatus exitStatus) {
+    QObject::disconnect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
+                         this, SLOT(finishedListing(int, QProcess::ExitStatus)));
+
+    cleanupExecutable(exitCode, exitStatus);
+}
+
+/*! \brief Prepare the QProcess to be lunched.
+ *
+ * This function creates a QProcess and initialize stdout and sterr capture.
+ */
+void GTestExecutable::setUpExecutable(){
+    //We lock so that any attempt to try to produce a listing
+    //or run a test will block until we're done with what we're
+    //doing here.
+    processLock.lock();
+    gtest = new QProcess();
+
+    //open buffers only once so we don't lose previously gathered data.
+    standardOutput.open(QBuffer::WriteOnly);
+    standardError.open(QBuffer::WriteOnly);
+
+    QObject::connect(gtest, SIGNAL(readyReadStandardOutput()),
+                     this, SLOT(standardOutputAvailable()));
+    QObject::connect(gtest, SIGNAL(readyReadStandardError()),
+                     this, SLOT(standardErrorAvailable()));
 }
 
 /*! \brief Slot to be called when the QProcess has finished execution.
@@ -276,14 +303,18 @@ void GTestExecutable::readExecutableOutput(QBuffer& standardChannel) {
  * This function is called after a QProcess has finished either generating
  * a listing, or running the tests in the gtest executable. It populates
  * the exit statuses which can be subsequently checked by the test runner.
+ * It also shutdown stdout and stderr capture.
  */
-void GTestExecutable::executableFinished(int exitCode, QProcess::ExitStatus exitStatus) {
-	QObject::disconnect(gtest, SIGNAL(readyReadStandardOutput()),
-						this, SLOT(standardOutputAvailable()));
-	QObject::disconnect(gtest, SIGNAL(finished(int, QProcess::ExitStatus)),
-						this, SLOT(executableFinished(int, QProcess::ExitStatus)));
+void GTestExecutable::cleanupExecutable(int exitCode, QProcess::ExitStatus exitStatus) {
+    QObject::disconnect(gtest, SIGNAL(readyReadStandardOutput()),
+                        this, SLOT(standardOutputAvailable()));
+    QObject::disconnect(gtest, SIGNAL(readyReadStandardError()),
+                        this, SLOT(standardErrorAvailable()));
 
-	//We don't do anymore processing or anything in here,
+    standardOutput.close();
+    standardError.close();
+
+    //We don't do anymore processing or anything in here,
 	//just record the exit status/code for reference.
 	error = gtest->error();
 	this->exitStatus = exitStatus;

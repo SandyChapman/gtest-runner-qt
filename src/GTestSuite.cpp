@@ -76,8 +76,11 @@ void GTestSuite::receiveTestResults(GTestResults* testSuiteResults) {
 	QList<GTest*>::iterator it = runList.begin();
 	GTestResults* testResults;
 	while(it != runList.end()) {
-		testResults = testSuiteResults->getTestResults((*it)->objectName());
-		(*it)->receiveTestResults(testResults);
+        QString testName = (*it)->objectName();
+        testResults = testSuiteResults->getTestResults(testName);
+        if (testResults){
+            (*it)->receiveTestResults(testResults);
+        }
 		++it;
 	}
 	runList.clear();

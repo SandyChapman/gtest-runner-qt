@@ -78,10 +78,10 @@ signals:
 	void listingReady(GTestExecutable* sender); //!< Sends notification that a new listing has been received.
 
 public slots:
-	void executableFinished(int exitCode, QProcess::ExitStatus exitStatus);
-	void parseListing(int exitCode, QProcess::ExitStatus exitStatus);
-	void parseTestResults(int exitCode, QProcess::ExitStatus exitStatus);
-	void resetRunState();
+    void finishedListing(int exitCode, QProcess::ExitStatus exitStatus);
+    void finishedTesting(int exitCode, QProcess::ExitStatus exitStatus);
+    void parseListing(int exitCode, QProcess::ExitStatus exitStatus);
+    void resetRunState();
 	void runTest();
 	void standardErrorAvailable();
 	void standardOutputAvailable();
@@ -100,6 +100,8 @@ public:
 	STATE getState();
 
 	void setExecutablePath(QString executablePath);
+    void setUpExecutable();
+    void cleanupExecutable(int exitCode, QProcess::ExitStatus exitStatus);
 
 	void produceListing();
 	virtual void run();
