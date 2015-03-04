@@ -213,7 +213,7 @@ void MetaModel::insertItem(const QModelIndex& index) {
 
 			//add the valid children to the stack
 			QModelIndex child = currentIndex.child(0, 0);
-			while(child.isValid()) {
+            while(child.isValid() && currentMetaItem) {
 				stack.push(child);
 				childMetaItem = itemModel->data(child, Qt::MetaDataRole).value<MetaItem*>();
 				TreeModel::insertItem(childMetaItem, currentMetaItem->childCount(), currentMetaItem);

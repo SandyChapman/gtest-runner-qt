@@ -36,7 +36,7 @@
  * \param flags The main window flags for the application.
  * <a href="http://doc.qt.nokia.com/4.6/qt.html#WindowType-enum">Qt::WFlags Reference</a>
  */
-GTestRunner::GTestRunner(QWidget *parent, Qt::WFlags flags)
+GTestRunner::GTestRunner(QWidget *parent, Qt::WindowFlags flags)
  : QMainWindow(parent, flags)
 {
 	setupUi(this);

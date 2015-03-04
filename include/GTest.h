@@ -46,7 +46,7 @@ protected:
 					 */
 
 	GTestResults* testResults; /**< Pointer to a test result object
-								*   This is null until the test is actuallyu run.
+                                *   This is null until the test is actually run.
 								*/
 
 signals:
@@ -54,8 +54,8 @@ signals:
 	void testResultsReady();//!< Sends a notification that the test results have been received and are ready to be read.
 
 public:
-	GTest(QObject* parent = 0, QString name = QString());
-	GTest(GTestSuite* parent = 0, QString name = QString());
+    GTest(QObject* parent, QString name = QString());
+    GTest(GTestSuite* parent, QString name = QString());
 	virtual ~GTest();
 	const GTestResults* getTestResults() const;
 

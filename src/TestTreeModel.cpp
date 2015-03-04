@@ -135,8 +135,7 @@ void TestTreeModel::updateListing(GTestExecutable* gtest) {
 
 		QObject::connect(this, SIGNAL(runningTests()),
 						 gtest, SLOT(runTest()));
-		QObject::connect(this, SIGNAL(resettingRunStates()),
-										 gtest, SLOT(resetRunState()));
+
 	}
 	//Get which of the tests are new. This should be all of them the first
 	//time through for this test.
