@@ -226,6 +226,20 @@ void TestTreeModel::populateTestResult() {
 	treeItem->setData(var, 0, Qt::MetaDataRole);
 }
 
+/*! \brief Clear background of the Test Tree before running it.
+ *
+ */
+void TestTreeModel::ClearTestTreeBackground(TreeItem * treeItem){
+    QModelIndex index = createIndex(treeItem->row(), treeItem->column(), treeItem);
+    setData(index, QVariant(QBrush()), Qt::BackgroundRole); // this will restore the default value
+
+    QList<TreeItem* > children = treeItem->children();
+    for(int ii = 0; ii< children.size(); ii++){
+        ClearTestTreeBackground(children.at(ii));
+    }
+}
+
+
 /*! \brief Runs all tests that are checked.
  *
  * This is the only way tests results are populated into the model.
@@ -235,6 +249,8 @@ void TestTreeModel::populateTestResult() {
  */
 void TestTreeModel::runTests() {
 	emit aboutToRunTests();
+
+    ClearTestTreeBackground(&rootItem);
 
 	QStack<TreeItem* > stack;
 	QList<TreeItem* > children;
