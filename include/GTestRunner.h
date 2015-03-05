@@ -57,6 +57,8 @@ signals:
 public slots:
 	void addTests();
 	void treeItemClicked(QTreeWidgetItem* item, int column);
+    void DisableRunAction();
+    void EnableRunAction();
 
 private:
 	void setup();

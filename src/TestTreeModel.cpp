@@ -224,7 +224,24 @@ void TestTreeModel::populateTestResult() {
 	//create a new meta item and insert it into the tree item.
 	var.setValue<MetaItem* >(testResults->createMetaItem());
 	treeItem->setData(var, 0, Qt::MetaDataRole);
+
+    if(m_processCount.deref())
+        emit allTestsCompleted();
 }
+
+/*! \brief Clear background of the Test Tree before running it.
+ *
+ */
+void TestTreeModel::ClearTestTreeBackground(TreeItem * treeItem){
+    QModelIndex index = createIndex(treeItem->row(), treeItem->column(), treeItem);
+    setData(index, QVariant(QBrush()), Qt::BackgroundRole); // this will restore the default value
+
+    TreeItem * testitem;
+    foreach(testitem, treeItem->children()){
+        ClearTestTreeBackground(testitem);
+    }
+}
+
 
 /*! \brief Runs all tests that are checked.
  *
@@ -236,6 +253,8 @@ void TestTreeModel::populateTestResult() {
 void TestTreeModel::runTests() {
 	emit aboutToRunTests();
 
+    ClearTestTreeBackground(&rootItem);
+
 	QStack<TreeItem* > stack;
 	QList<TreeItem* > children;
 	TreeItem* item;
@@ -244,8 +263,10 @@ void TestTreeModel::runTests() {
 	while(!stack.isEmpty()) {
 		item = stack.pop();
 		GTest* test = item->data(0, Qt::UserRole).value<GTest*>();
-		if(test && (item->data(0, Qt::CheckStateRole).value<int>() == Qt::Checked))
+        if(test && (item->data(0, Qt::CheckStateRole).value<int>() == Qt::Checked)){
+            m_processCount.ref();
 			test->run();
+            }
 		else {
 			children = item->children();
 			QList<TreeItem* >::iterator it = children.begin();

@@ -73,10 +73,16 @@ void GTestRunner::setup() {
 	QObject::connect(this->importTestAction, SIGNAL(triggered()),
 					 this, SLOT(addTests()));
 
-	QObject::connect(this->runTestsAction, SIGNAL(triggered()),
-					 testModel, SLOT(runTests()));
+    QObject::connect(this->runTestsAction, SIGNAL(triggered()),
+                     testModel, SLOT(runTests()));
 
-	QObject::connect(this->refreshAction, SIGNAL(triggered()),
+    QObject::connect(this->runTestsAction, SIGNAL(triggered()),
+                     this, SLOT(DisableRunAction()));
+
+    QObject::connect(testModel, SIGNAL(allTestsCompleted()),
+                     this, SLOT(EnableRunAction()));
+
+    QObject::connect(this->refreshAction, SIGNAL(triggered()),
 					 testModel, SLOT(updateAllListings()));
 
 	QObject::connect(this->removeTestsAction, SIGNAL(triggered()),
@@ -85,6 +91,21 @@ void GTestRunner::setup() {
 	QObject::connect(this->exitAction, SIGNAL(triggered()),
 					 qApp, SLOT(quit()));
 }
+
+/*! \brief Disable run button while tests are running.
+ *
+ */
+void GTestRunner::DisableRunAction() {
+    this->runTestsAction->setDisabled(true);
+}
+
+/*! \brief Enable run button when tests are finished.
+ *
+ */
+void GTestRunner::EnableRunAction() {
+    this->runTestsAction->setDisabled(false);
+}
+
 
 /*! \brief Slot to prompt a dialog to have the user add unit tests to run.
  *
