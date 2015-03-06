@@ -57,6 +57,7 @@ private:
 	template <class T, class U>
 	TreeItem* createNewTreeItem(T parent, U* test);
 	bool setCheckState(TreeItem* item, Qt::CheckState state, int recursionDirection = (TO_PARENT | TO_CHILDREN));
+    QAtomicInt m_processCount;
 
 private slots:
 	void updateListing(GTestExecutable* gtest);
@@ -68,6 +69,7 @@ private slots:
 signals:
 	void aboutToRunTests(); //!< Sends a signal to any listeners to prepare for test runs.
 	void runningTests();
+    void allTestsCompleted();
 
 public:
 

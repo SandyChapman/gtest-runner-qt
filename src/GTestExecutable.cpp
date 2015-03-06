@@ -207,14 +207,13 @@ void GTestExecutable::finishedTesting(int exitCode, QProcess::ExitStatus exitSta
 	GTestParser parser(&xmlFile);
 	GTestExecutableResults* testResults = parser.parse();
 	this->testResults = testResults;
-	QList<GTest*>::iterator it = this->runList.begin();
-	GTestResults* testSuiteResults;
-	while(it != this->runList.end()) {
-        testSuiteResults = testResults->getTestResults((*it)->objectName());
+
+    GTest* it;
+    foreach(it , runList) {
+        GTestResults* testSuiteResults = testResults->getTestResults(it->objectName());
         if(testSuiteResults){
-            (*it)->receiveTestResults(testSuiteResults);
+            it->receiveTestResults(testSuiteResults);
         }
-		++it;
 	}
 	runList.clear();
     cleanupExecutable(exitCode, exitStatus);
