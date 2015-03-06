@@ -50,6 +50,7 @@ class GTestRunner : public QMainWindow, private Ui::GTestRunner
 public:
     GTestRunner(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~GTestRunner();
+    void AddExecutable(QString filepath);
 
 signals:
 	void runningTests();	//!< Sends a signal when the processes have been launched.

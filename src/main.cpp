@@ -22,7 +22,19 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+
     GTestRunner w;
+
+    // If a filename was passed on the command line, add the tests immediately.
+    QCommandLineParser parser;
+    QCommandLineOption testExecutablePath(QStringList() << "f" << "file", "Specify a googletest executable filepath.", "executable");
+    parser.addOption(testExecutablePath);
+    parser.process(a);
+    QString targetDir = parser.value(testExecutablePath);
+    if(QFile::exists(targetDir)){
+        w.AddExecutable(targetDir);
+    }
+
     w.show();
     return a.exec();
 }
