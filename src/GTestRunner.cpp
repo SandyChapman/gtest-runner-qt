@@ -92,6 +92,12 @@ void GTestRunner::setup() {
 					 qApp, SLOT(quit()));
 }
 
+void GTestRunner::AddExecutable(QString filepath){
+    // An executable was passed to the command line
+    testModel->addDataSource(filepath);
+}
+
+
 /*! \brief Disable run button while tests are running.
  *
  */
