@@ -83,7 +83,7 @@ public:
 	TestTreeModel(QObject* parent = 0);
     void ClearTestTreeBackground(TreeItem * treeItem);
 	~TestTreeModel();
-	ERROR addDataSource(const QString filepath);
+    ERROR addDataSource(const QString filepath, const QString outputDir);
 	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
 	virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole);
 

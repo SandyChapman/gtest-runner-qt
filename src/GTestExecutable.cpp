@@ -20,6 +20,7 @@
 #include <QDebug>
 #include <QFile>
 #include <QMessageBox>
+#include <QDateTime>
 
 /*! \brief Constructor
  *
@@ -184,8 +185,16 @@ void GTestExecutable::runTest() {
     }
 	filterString.chop(1);
 
+    // Compose the output file name from the executable name and a timestamp.
+    QFileInfo fi(objectName());
+    m_OutputFilePath = m_ResultsPath;
+    m_OutputFilePath.append("test_details-");
+    m_OutputFilePath.append(fi.baseName());
+    m_OutputFilePath.append( QDateTime::currentDateTime().toString("'-'yyyy_MM_dd-HH_mm_ss"));
+    m_OutputFilePath.append(".xml");
+
 	QStringList commandLineParameters;
-    commandLineParameters << "--gtest_output=xml:./test_detail_1337.xml";
+    commandLineParameters << "--gtest_output=xml:" + m_OutputFilePath;
 	commandLineParameters << filterString;
 
 	//! \todo Only run tests in the runList.
@@ -203,8 +212,8 @@ void GTestExecutable::finishedTesting(int exitCode, QProcess::ExitStatus exitSta
     processLock.unlock();
 	if(exitStatus != QProcess::NormalExit)
 		return;
-	QFile xmlFile("./test_detail_1337.xml");
-	GTestParser parser(&xmlFile);
+    QFile xmlFile(m_OutputFilePath);
+    GTestParser parser(&xmlFile);
 	GTestExecutableResults* testResults = parser.parse();
 	this->testResults = testResults;
 

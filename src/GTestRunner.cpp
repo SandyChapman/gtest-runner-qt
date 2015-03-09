@@ -92,9 +92,11 @@ void GTestRunner::setup() {
 					 qApp, SLOT(quit()));
 }
 
+/*! \brief Add executable from the command line
+ *
+ */
 void GTestRunner::AddExecutable(QString filepath){
-    // An executable was passed to the command line
-    testModel->addDataSource(filepath);
+    testModel->addDataSource(filepath, m_resultspath);
 }
 
 
@@ -130,7 +132,7 @@ void GTestRunner::addTests() {
 			return;
 
 		//Non-empty path, so let's check out whether we can use it or not.
-		switch(testModel->addDataSource(filepath)) {
+        switch(testModel->addDataSource(filepath, m_resultspath)) {
 			case TestTreeModel::FILE_NOT_FOUND: {
 				QMessageBox::StandardButton btnPressed = QMessageBox::warning(this,
 						tr("File Not Found"),

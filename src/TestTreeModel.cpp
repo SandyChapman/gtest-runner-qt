@@ -53,9 +53,10 @@ TestTreeModel::~TestTreeModel() {}
  * \return An error code whether the addition of the data source was successful.
  * \todo Set this function to take a QFile instead of a string.
  */
-TestTreeModel::ERROR TestTreeModel::addDataSource(const QString filepath) {
+TestTreeModel::ERROR TestTreeModel::addDataSource(const QString filepath, const QString outputDir) {
 	QSharedPointer<GTestExecutable> newTest(new GTestExecutable(this));
 	newTest->setExecutablePath(filepath);
+    newTest->setResultPath(outputDir);
 	switch(newTest->getState()) {
 	case GTestExecutable::VALID:
 		QObject::connect(newTest.data(), SIGNAL(listingReady(GTestExecutable*)),
