@@ -96,7 +96,7 @@ TreeItem* TestTreeModel::createNewTreeItem(T parent, U* test) {
 	datum.insert(Qt::DisplayRole, var);
 	var.setValue<GTest*>(test);
 	datum.insert(Qt::UserRole, var);
-	var.setValue(static_cast<int>(Qt::Unchecked));
+    var.setValue(static_cast<int>(Qt::Checked));
 	datum.insert(Qt::CheckStateRole, var);
 	data.append(datum);
 
