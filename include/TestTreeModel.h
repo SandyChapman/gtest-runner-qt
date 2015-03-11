@@ -18,6 +18,8 @@
 #define TESTTREEMODEL_H_
 
 #include <QAbstractItemModel>
+#include <QAbstractItemView>
+#include <QPlainTextEdit>
 #include <QHash>
 #include <QModelIndex>
 #include <QSharedPointer>
@@ -58,6 +60,7 @@ private:
 	TreeItem* createNewTreeItem(T parent, U* test);
 	bool setCheckState(TreeItem* item, Qt::CheckState state, int recursionDirection = (TO_PARENT | TO_CHILDREN));
     QAtomicInt m_processCount;
+    QPlainTextEdit *m_result;
 
 private slots:
 	void updateListing(GTestExecutable* gtest);
@@ -80,12 +83,15 @@ public:
 		UNKNOWN
 	};
 
-	TestTreeModel(QObject* parent = 0);
+    TestTreeModel(QObject* parent, QPlainTextEdit *result);
     void ClearTestTreeBackground(TreeItem * treeItem);
 	~TestTreeModel();
     ERROR addDataSource(const QString filepath, const QString outputDir);
 	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
 	virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole);
+
+public slots:
+    void printResult ( const QModelIndex & selected, const QModelIndex & deselected );
 
 };
 

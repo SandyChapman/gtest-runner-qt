@@ -22,7 +22,6 @@
 #include <QSharedPointer>
 #include <QStack>
 
-#include "MetaModel.h"
 #include "TestTreeModel.h"
 #include "TreeItem.h"
 #include "GTestExecutable.h"
@@ -30,15 +29,16 @@
 /*! \brief Constructor
  *
  */
-TestTreeModel::TestTreeModel(QObject* parent)
+TestTreeModel::TestTreeModel(QObject* parent, QPlainTextEdit *result)
 : TreeModel(parent)
 {
 	QList<QMap<int, QVariant> > data;
 	QMap<int, QVariant> datum;
 	datum.insert(Qt::DisplayRole, "Test Name");
-	datum.insert(Qt::MetaDataRole, "Test Results");
 	data.append(datum);
 	rootItem.setData(data);
+
+    m_result = result;
 }
 
 /*! \brief Destructor
@@ -215,17 +215,6 @@ void TestTreeModel::populateTestResult() {
 	else
 		setData(index, QVariant(QBrush(QColor(0xFF,0x88,0x88,0xFF))), Qt::BackgroundRole);
 
-	//clean up the old meta item
-	emit metaDataAboutToBeChanged(index);
-	var = treeItem->data(0, Qt::MetaDataRole);
-	MetaItem* oldMetaItem = var.value<MetaItem*>();
-	if(oldMetaItem)
-		delete oldMetaItem;
-
-	//create a new meta item and insert it into the tree item.
-	var.setValue<MetaItem* >(testResults->createMetaItem());
-	treeItem->setData(var, 0, Qt::MetaDataRole);
-
     if(m_processCount.deref())
         emit allTestsCompleted();
 }
@@ -304,9 +293,6 @@ void TestTreeModel::updateAllListings() {
  * \return A QVariant of the data.
  */
 QVariant TestTreeModel::data(const QModelIndex& index, int role) const {
-	if(role != Qt::MetaDataRole)
-		return TreeModel::data(index, role);
-
 	TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
 	if(item)
 		return item->data(0, role);
@@ -398,6 +384,31 @@ bool TestTreeModel::setCheckState(TreeItem* item, Qt::CheckState newState, int r
 	QModelIndex index(createIndex(item->row(),0,item));
 	emit dataChanged(index, index);
 	return retval;
+}
+
+/*! \brief Populate the result pane.
+ *
+ */
+void  TestTreeModel::printResult ( const QModelIndex & selected, const QModelIndex & deselected ){
+    Q_UNUSED(deselected);
+    QString Result;
+
+    TreeItem *treeItem = static_cast<TreeItem*>(selected.internalPointer());
+    if(treeItem != 0){
+        QVariant var = treeItem->data(0, Qt::UserRole);
+        GTest* testItem = var.value<GTest*>();
+        if(testItem != 0){
+            const GTestResults* testResults = testItem->getTestResults();
+            if(testResults != 0){
+                QStringList messageList = testResults->getFailureMessages();
+                int ii = 0;
+                while(messageList.count()>ii){
+                    Result.append(messageList.at(ii++));
+                }
+            }
+        }
+    }
+    m_result->setPlainText(Result);
 }
 
 void TestTreeModel::removeSelectedTests() {

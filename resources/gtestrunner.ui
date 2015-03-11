@@ -28,7 +28,11 @@
         </sizepolicy>
        </property>
       </widget>
-      <widget class="QTreeView" name="resultsTree"/>
+      <widget class="QPlainTextEdit" name="result">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -39,7 +43,7 @@
      <x>0</x>
      <y>0</y>
      <width>514</width>
-     <height>23</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileMenu">

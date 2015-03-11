@@ -20,8 +20,6 @@
 #include <QSharedPointer>
 #include <QStringList>
 
-#include "MetaItem.h"
-
 /* \brief This class logically represents the results of running a unit test.
  *
  * The class is the analogue to a gtest unit test result. It consists of the name of
@@ -69,7 +67,6 @@ public:
 	QStringList getFailureMessages() const;
 
 	virtual GTestResults* getTestResults(QString name);
-	virtual MetaItem* createMetaItem() const;
 
 };
 

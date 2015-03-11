@@ -27,8 +27,6 @@ class TreeModel : public QAbstractItemModel {
 
 	Q_OBJECT;
 
-signals:
-	void metaDataAboutToBeChanged(const QModelIndex& index);
 
 protected:
 	TreeItem rootItem; //!< The root of the data model. It's data is shown in the header.

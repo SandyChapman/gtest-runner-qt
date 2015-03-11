@@ -35,7 +35,6 @@
 #include "GTestExecutable.h"
 
 class TestTreeModel;
-class MetaModel;
 
 /*! \brief The is the main application window class.
  *
@@ -66,7 +65,6 @@ private:
 	void invokeListingRetrieval(QSharedPointer<GTestExecutable> gtest);
 
 	TestTreeModel* testModel;
-	MetaModel* metaModel;
     QString m_resultspath;
 };
 

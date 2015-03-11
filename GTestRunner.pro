@@ -19,8 +19,6 @@ HEADERS += include/GTestSuiteResults.h \
     include/GTestParser.h \
     include/GTestRunner.h \
     include/TestTreeModel.h \
-    include/MetaModel.h \
-    include/MetaItem.h \
     include/TreeModel.h \
     include/TreeItem.h
 SOURCES += src/GTestResults.cpp \
@@ -33,8 +31,6 @@ SOURCES += src/GTestResults.cpp \
     src/GTestParser.cpp \
     src/GTestRunner.cpp \
     src/TestTreeModel.cpp \
-    src/MetaModel.cpp \
-    src/MetaItem.cpp \
     src/TreeModel.cpp \
     src/TreeItem.cpp
 FORMS += resources/gtestrunner.ui

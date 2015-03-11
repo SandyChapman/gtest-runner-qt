@@ -15,7 +15,6 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include "GTestRunner.h"
-#include "MetaModel.h"
 #include "TestTreeModel.h"
 
 #include <QAction>
@@ -56,16 +55,15 @@ GTestRunner::~GTestRunner()
  * to set up as well.
  */
 void GTestRunner::setup() {
-	testModel = new TestTreeModel(this);
+    testModel = new TestTreeModel(this, result);
 	testTree->setModel(testModel);
 	testTree->setSelectionBehavior(QAbstractItemView::SelectRows);
 	testTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
-	metaModel = new MetaModel(this);
-	metaModel->setSelectionModel(testTree->selectionModel());
-	metaModel->setItemModel(testModel);
-	resultsTree->setModel(metaModel);
-	testModel->setSelectionModel(testTree->selectionModel());
 
+    QItemSelectionModel *ism = testTree->selectionModel();
+    testModel->setSelectionModel(ism);
+    QObject::connect(ism, SIGNAL(currentChanged(const QModelIndex& , const QModelIndex&)),
+                     testModel, SLOT(printResult(const QModelIndex& , const QModelIndex&)));
 
 	QObject::connect(this->aboutQtAction, SIGNAL(triggered()),
 					 qApp, SLOT(aboutQt()));
