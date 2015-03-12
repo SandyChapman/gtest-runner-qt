@@ -47,7 +47,6 @@ public:
 	QList<QMap<int, QVariant> > data() const;
 	TreeItem* findChild(const QVariant& value, int role) const;
 	bool insertChild(int row, TreeItem* child);
-	bool insertChildren(int row, QList<TreeItem* > children);
 	TreeItem* parent();
 	void removeAllChildren();
 	bool removeChild(TreeItem* child);
@@ -136,24 +135,6 @@ inline bool TreeItem::insertChild(int row, TreeItem* child) {
 	child->setParent(this);
 	if(!childItems.contains(child))
 		childItems.insert(row, child);
-	return true;
-}
-
-/*! \brief Inserts the list of children given at the index 'row'.
- *
- * The row parameter will become the index of the first item in
- * the list. If the row parameter is greater than the number of children
- * or less than 0, this function does nothing and returns false.
- * \param row The row to insert this item before.
- * \param children The list of children to insert into this item.
- * \return true if the children were successfully inserted, false otherwise.
- */
-inline bool TreeItem::insertChildren(int row, QList<TreeItem* > children) {
-	if(row < 0 || row > childItems.size())
-		return false;
-	TreeItem* child;
-	foreach(child, children)
-		childItems.insert(row++, child);
 	return true;
 }
 

@@ -41,7 +41,6 @@ public:
 	virtual QVariant headerData(int secton, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 	virtual QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
 	virtual bool insertItem(TreeItem* item, int row, TreeItem* parent);
-	virtual bool insertItems(const QList<TreeItem* > items, int row, TreeItem* parent);
 	virtual QModelIndex parent(const QModelIndex& index) const;
 	virtual int columnCount(const QModelIndex& parent = QModelIndex()) const;
 	virtual int rowCount(const QModelIndex& parent = QModelIndex()) const;

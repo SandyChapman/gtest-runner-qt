@@ -39,7 +39,7 @@ class GTest : public QObject {
 Q_OBJECT
 
 protected:
-	//QString name;
+    //QString name; we use QObject::objectName
 	/**< Represents the name of the test.
 					 *   In the case of the GTestExecutable class, this holds
 					 *   the executable's file path.

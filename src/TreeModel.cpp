@@ -204,22 +204,3 @@ bool TreeModel::insertItem(TreeItem* item, int row, TreeItem* parent) {
 	endInsertRows();
 	return true;
 }
-
-/*! \brief Inserts a list of items into the model before row 'row' on the parent given.
- *
- * If the parent, or the item is null, this function does nothing and returns false.
- * Otherwise, the appropriate QAbstractItemModel signals are emitted and the children
- * are inserted into the model.
- * \param items A list of items to be inserted.
- * \param row The position to insert the items.
- * \param parent The parent to add the items to as child rows.
- * \return true if the items were inserted successfully, false otherwise.
- */
-bool TreeModel::insertItems(QList<TreeItem* > items, int row, TreeItem* parent) {
-	if(items.count() == 0 || parent == 0)
-		return false;
-	beginInsertRows(createIndex(parent->row(), 0, parent), row, row+items.count());
-	parent->insertChildren(row, items);
-	endInsertRows();
-	return true;
-}
