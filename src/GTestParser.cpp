@@ -74,12 +74,10 @@ GTestExecutableResults* GTestParser::parse() {
 			testResults->setRunningTime(attributes.value("time").toString().toUInt());
 			testResults->setStatus(attributes.value("status").toString());
 			xmlStream.readNext();
-			qDebug() << xmlStream.name();
 			while(xmlStream.name() != "testcase") { //no closing </testcase> yet
 				if(xmlStream.isCDATA())
 					testResults->addFailureMessage(xmlStream.text().toString());
 				xmlStream.readNext();
-				qDebug() << xmlStream.name();
 			}
 			testSuiteResults->addTestResults(testResults);
 		}

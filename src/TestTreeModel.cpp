@@ -17,6 +17,7 @@
 #include <QApplication>
 #include <QDebug>
 #include <QMap>
+#include <QProgressBar>
 #include <QMessageBox>
 #include <QModelIndexList>
 #include <QSharedPointer>
@@ -59,10 +60,10 @@ TestTreeModel::ERROR TestTreeModel::addDataSource(const QString filepath, const 
     newTest->setResultPath(outputDir);
 	switch(newTest->getState()) {
 	case GTestExecutable::VALID:
-		QObject::connect(newTest.data(), SIGNAL(listingReady(GTestExecutable*)),
-						 this, SLOT(updateListing(GTestExecutable*)));
-		QObject::connect(this, SIGNAL(aboutToRunTests()),
-						 newTest.data(), SLOT(resetRunState()));
+        QObject::connect(newTest.data(), SIGNAL(listingReady(GTestExecutable*)), this, SLOT(updateListing(GTestExecutable*)));
+        QObject::connect(newTest.data(), SIGNAL(BeginTest(GTest*)), this, SLOT(BeginTest(GTest*)));
+        QObject::connect(newTest.data(), SIGNAL(EndTest(GTest*, bool)), this, SLOT(EndTest(GTest*, bool)));
+        QObject::connect(this, SIGNAL(aboutToRunTests()), newTest.data(), SLOT(resetRunState()));
 		//We insert it so that it doesn't auto-delete from the shared ptr.
 		//Will probably be useful later on when we want to save settings.
 		testExeHash.insert(newTest->objectName(), newTest);
@@ -176,7 +177,21 @@ void TestTreeModel::updateListing(GTestExecutable* gtest) {
 	emit layoutChanged();
 }
 
-						 
+void TestTreeModel::BeginTest(GTest*){
+
+}
+
+void TestTreeModel::EndTest(GTest * test, bool success){
+    TreeItem* treeItem = itemTestHash.value(test);
+    if(treeItem == 0)
+        return;
+    QModelIndex index = createIndex(treeItem->row(), treeItem->column(), treeItem);
+    if(success)
+        setData(index, QVariant(QBrush(QColor(0xAB,0xFF,0xBB,0xFF))), Qt::BackgroundRole);
+    else
+        setData(index, QVariant(QBrush(QColor(0xFF,0x88,0x88,0xFF))), Qt::BackgroundRole);
+}
+
 /*! \brief Populates a test result into the test tree.
  *
  * This function takes a QObject* which should be a TestTreeWidgetItem.

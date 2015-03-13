@@ -78,6 +78,8 @@ private:
 
 signals:
 	void listingReady(GTestExecutable* sender); //!< Sends notification that a new listing has been received.
+    void BeginTest(GTest*);
+    void EndTest(GTest*, bool success);
 
 public slots:
     void finishedListing(int exitCode, QProcess::ExitStatus exitStatus);

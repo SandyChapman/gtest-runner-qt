@@ -68,6 +68,8 @@ private slots:
 	void populateTestResult();
 	void removeSelectedTests();
 	void runTests();
+    void BeginTest(GTest*);
+    void EndTest(GTest*, bool success);
 
 signals:
 	void aboutToRunTests(); //!< Sends a signal to any listeners to prepare for test runs.
