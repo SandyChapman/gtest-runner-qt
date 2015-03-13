@@ -57,6 +57,7 @@ private:
 	template <class T, class U>
 	TreeItem* createNewTreeItem(T parent, U* test);
 	bool setCheckState(TreeItem* item, Qt::CheckState state, int recursionDirection = (TO_PARENT | TO_CHILDREN));
+    QAtomicInt m_processCount;
 
 private slots:
 	void updateListing(GTestExecutable* gtest);
@@ -68,6 +69,7 @@ private slots:
 signals:
 	void aboutToRunTests(); //!< Sends a signal to any listeners to prepare for test runs.
 	void runningTests();
+    void allTestsCompleted();
 
 public:
 
@@ -79,8 +81,9 @@ public:
 	};
 
 	TestTreeModel(QObject* parent = 0);
+    void ClearTestTreeBackground(TreeItem * treeItem);
 	~TestTreeModel();
-	ERROR addDataSource(const QString filepath);
+    ERROR addDataSource(const QString filepath, const QString outputDir);
 	virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
 	virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole);
 

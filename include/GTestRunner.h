@@ -50,13 +50,16 @@ class GTestRunner : public QMainWindow, private Ui::GTestRunner
 public:
     GTestRunner(QWidget *parent = 0, Qt::WindowFlags flags = 0);
     ~GTestRunner();
-
+    void AddExecutable(QString filepath);
+    void AddResultsPath(QString outputDir){ m_resultspath = outputDir;}
 signals:
 	void runningTests();	//!< Sends a signal when the processes have been launched.
 
 public slots:
 	void addTests();
 	void treeItemClicked(QTreeWidgetItem* item, int column);
+    void DisableRunAction();
+    void EnableRunAction();
 
 private:
 	void setup();
@@ -64,7 +67,7 @@ private:
 
 	TestTreeModel* testModel;
 	MetaModel* metaModel;
-
+    QString m_resultspath;
 };
 
 #endif // GTESTRUNNER_H

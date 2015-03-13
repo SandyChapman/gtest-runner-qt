@@ -22,7 +22,32 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+
     GTestRunner w;
+
+    QCommandLineParser parser;
+    QCommandLineOption testExecutablePath(QStringList() << "f" << "file", "Specify a googletest executable filepath.", "executable");
+    parser.addOption(testExecutablePath);
+    QCommandLineOption testOutputPath(QStringList() << "o" << "output-directory", "Specify a directory to store the result xml.", "outputDir");
+    parser.addOption(testOutputPath);
+
+    parser.process(a);
+
+    // Set directory before the executable because the output dir will be propagated
+    QString targetDir = parser.value(testOutputPath);
+    if(QFile::exists(targetDir)){
+        QDir lDir(targetDir);
+        if(lDir.exists()){  // check that it is a directory.
+            w.AddResultsPath(targetDir);
+        }
+    }
+
+    // If a filename was passed on the command line, add the tests immediately.
+    QString targetFile = parser.value(testExecutablePath);
+    if(QFile::exists(targetFile)){
+        w.AddExecutable(targetFile);
+    }
+
     w.show();
     return a.exec();
 }

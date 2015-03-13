@@ -70,6 +70,8 @@ private:
 	QProcess::ProcessError error;	//!< The state of the QProcess after its run
 	QProcess::ExitStatus exitStatus;//!< The exit status of the QProcess
 	int exitCode;					//!< The exit code of the QProcess
+    QString m_ResultsPath;
+    QString m_OutputFilePath;
 
 	void runExecutable(QStringList args);
 	void readExecutableOutput(QBuffer& standardChannel);
@@ -100,6 +102,7 @@ public:
 	STATE getState();
 
 	void setExecutablePath(QString executablePath);
+    void setResultPath(QString resultPath){m_ResultsPath = resultPath;}
     void setUpExecutable();
     void cleanupExecutable(int exitCode, QProcess::ExitStatus exitStatus);
 

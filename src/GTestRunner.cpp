@@ -73,10 +73,16 @@ void GTestRunner::setup() {
 	QObject::connect(this->importTestAction, SIGNAL(triggered()),
 					 this, SLOT(addTests()));
 
-	QObject::connect(this->runTestsAction, SIGNAL(triggered()),
-					 testModel, SLOT(runTests()));
+    QObject::connect(this->runTestsAction, SIGNAL(triggered()),
+                     testModel, SLOT(runTests()));
 
-	QObject::connect(this->refreshAction, SIGNAL(triggered()),
+    QObject::connect(this->runTestsAction, SIGNAL(triggered()),
+                     this, SLOT(DisableRunAction()));
+
+    QObject::connect(testModel, SIGNAL(allTestsCompleted()),
+                     this, SLOT(EnableRunAction()));
+
+    QObject::connect(this->refreshAction, SIGNAL(triggered()),
 					 testModel, SLOT(updateAllListings()));
 
 	QObject::connect(this->removeTestsAction, SIGNAL(triggered()),
@@ -85,6 +91,29 @@ void GTestRunner::setup() {
 	QObject::connect(this->exitAction, SIGNAL(triggered()),
 					 qApp, SLOT(quit()));
 }
+
+/*! \brief Add executable from the command line
+ *
+ */
+void GTestRunner::AddExecutable(QString filepath){
+    testModel->addDataSource(filepath, m_resultspath);
+}
+
+
+/*! \brief Disable run button while tests are running.
+ *
+ */
+void GTestRunner::DisableRunAction() {
+    this->runTestsAction->setDisabled(true);
+}
+
+/*! \brief Enable run button when tests are finished.
+ *
+ */
+void GTestRunner::EnableRunAction() {
+    this->runTestsAction->setDisabled(false);
+}
+
 
 /*! \brief Slot to prompt a dialog to have the user add unit tests to run.
  *
@@ -103,7 +132,7 @@ void GTestRunner::addTests() {
 			return;
 
 		//Non-empty path, so let's check out whether we can use it or not.
-		switch(testModel->addDataSource(filepath)) {
+        switch(testModel->addDataSource(filepath, m_resultspath)) {
 			case TestTreeModel::FILE_NOT_FOUND: {
 				QMessageBox::StandardButton btnPressed = QMessageBox::warning(this,
 						tr("File Not Found"),
