@@ -24,7 +24,6 @@
 #include <QModelIndex>
 #include <QSharedPointer>
 #include <QVariant>
-#include <QTreeView>
 
 #include "TreeModel.h"
 
@@ -62,7 +61,6 @@ private:
 	bool setCheckState(TreeItem* item, Qt::CheckState state, int recursionDirection = (TO_PARENT | TO_CHILDREN));
     QAtomicInt m_processCount;
     QPlainTextEdit *m_result;
-    QTreeView * m_treeView;
 
 private slots:
 	void updateListing(GTestExecutable* gtest);
@@ -87,7 +85,7 @@ public:
 		UNKNOWN
 	};
 
-    TestTreeModel(QObject* parent, QTreeView *treeView,  QPlainTextEdit *result);
+    TestTreeModel(QObject* parent, QPlainTextEdit *result);
     void ClearTestTreeBackground(TreeItem * treeItem);
 	~TestTreeModel();
     ERROR addDataSource(const QString filepath, const QString outputDir);

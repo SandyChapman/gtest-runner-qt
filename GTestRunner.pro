@@ -20,8 +20,7 @@ HEADERS += include/GTestSuiteResults.h \
     include/GTestRunner.h \
     include/TestTreeModel.h \
     include/TreeModel.h \
-    include/TreeItem.h \
-    include/TestTreeDelegate.h
+    include/TreeItem.h
 SOURCES += src/GTestResults.cpp \
     src/GTestSuiteResults.cpp \
     src/GTestSuite.cpp \

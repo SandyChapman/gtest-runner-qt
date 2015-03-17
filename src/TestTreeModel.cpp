@@ -21,7 +21,7 @@
 #include <QModelIndexList>
 #include <QSharedPointer>
 #include <QStack>
-#include "TestTreeDelegate.h"
+
 #include "TestTreeModel.h"
 #include "TreeItem.h"
 #include "GTestExecutable.h"
@@ -29,18 +29,15 @@
 /*! \brief Constructor
  *
  */
-TestTreeModel::TestTreeModel(QObject* parent, QTreeView *treeView, QPlainTextEdit *result)
+TestTreeModel::TestTreeModel(QObject* parent, QPlainTextEdit *result)
 : TreeModel(parent)
 {
 	QList<QMap<int, QVariant> > data;
 	QMap<int, QVariant> datum;
-    datum.insert(Qt::DisplayRole, "Test Name");
-    data.append(datum);
-    datum.insert(Qt::DisplayRole, "Progress");
-    data.append(datum);
-    rootItem.setData(data);
+	datum.insert(Qt::DisplayRole, "Test Name");
+	data.append(datum);
+	rootItem.setData(data);
 
-    m_treeView = treeView;
     m_result = result;
 }
 
@@ -186,19 +183,12 @@ void TestTreeModel::BeginTest(GTest* test){
     QModelIndex index = createIndex(treeItem->row(), treeItem->column(), treeItem);
     selectionModel->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
 
-//    m_treeView->setItemDelegateForRow(treeItem->row(), new TestTreeDelegate);
-//    m_treeView->setItemDelegateForColumn(0, new TestTreeDelegate);
 }
 
 void TestTreeModel::EndTest(GTest * test, bool success){
     TreeItem* treeItem = itemTestHash.value(test);
     if(treeItem == 0)
         return;
-
-//    TestTreeDelegate* curDelegate = (TestTreeDelegate*)m_treeView->itemDelegateForRow(treeItem->row());
-//    m_treeView->setItemDelegateForRow(treeItem->row(), 0);
-//    delete curDelegate;
-
     QModelIndex index = createIndex(treeItem->row(), treeItem->column(), treeItem);
     if(success)
         setData(index, QVariant(QBrush(QColor(0xAB,0xFF,0xBB,0xFF))), Qt::BackgroundRole);

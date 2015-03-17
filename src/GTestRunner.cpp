@@ -55,7 +55,7 @@ GTestRunner::~GTestRunner()
  * to set up as well.
  */
 void GTestRunner::setup() {
-    testModel = new TestTreeModel(this, testTree, result);
+    testModel = new TestTreeModel(this, result);
 	testTree->setModel(testModel);
 	testTree->setSelectionBehavior(QAbstractItemView::SelectRows);
 	testTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
