@@ -55,7 +55,7 @@ GTestRunner::~GTestRunner()
  * to set up as well.
  */
 void GTestRunner::setup() {
-    testModel = new TestTreeModel(this, result);
+    testModel = new TestTreeModel(this, testTree, result);
 	testTree->setModel(testModel);
 	testTree->setSelectionBehavior(QAbstractItemView::SelectRows);
 	testTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -102,6 +102,7 @@ void GTestRunner::AddExecutable(QString filepath){
  *
  */
 void GTestRunner::DisableRunAction() {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
     this->runTestsAction->setDisabled(true);
 }
 
@@ -109,6 +110,7 @@ void GTestRunner::DisableRunAction() {
  *
  */
 void GTestRunner::EnableRunAction() {
+    QApplication::restoreOverrideCursor();
     this->runTestsAction->setDisabled(false);
 }
 
