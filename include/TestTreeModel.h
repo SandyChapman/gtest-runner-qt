@@ -96,7 +96,7 @@ public:
 
 public slots:
     void printResult ( const QModelIndex & selected, const QModelIndex & deselected );
-
+    void AbortCurrentTests();
 };
 
 #endif /* TESTTREEMODEL_H_ */

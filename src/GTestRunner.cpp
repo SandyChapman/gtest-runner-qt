@@ -77,6 +77,9 @@ void GTestRunner::setup() {
     QObject::connect(this->runTestsAction, SIGNAL(triggered()),
                      this, SLOT(DisableRunAction()));
 
+    QObject::connect(this->stopTestsAction, SIGNAL(triggered()),
+                     testModel, SLOT(AbortCurrentTests()));
+
     QObject::connect(testModel, SIGNAL(allTestsCompleted()),
                      this, SLOT(EnableRunAction()));
 

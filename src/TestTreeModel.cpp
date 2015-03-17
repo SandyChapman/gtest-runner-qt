@@ -79,6 +79,23 @@ TestTreeModel::ERROR TestTreeModel::addDataSource(const QString filepath, const 
 	}
 }
 
+
+/*! \brief Kill all QProcess.
+ */
+void TestTreeModel::AbortCurrentTests(){
+    // Send kill signal to the QProcess.
+    QHash<QString, QSharedPointer<GTestExecutable> >::iterator it = testExeHash.begin();
+    while(it != testExeHash.end()) {
+        (*it)->Kill();
+        ++it;
+    }
+
+    // Cleanup
+    while(m_processCount.deref())
+        ;
+    emit allTestsCompleted();
+}
+
 /*! \brief Creates a tree item and sets up some slot/signals.
  *
  * This function is a help to the updateListing method which enables

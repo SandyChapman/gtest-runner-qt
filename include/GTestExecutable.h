@@ -110,6 +110,7 @@ public:
 
 	void produceListing();
 	virtual void run();
+    void Kill(){ gtest->kill(); }
 };
 
 Q_DECLARE_METATYPE(GTestExecutable*);
