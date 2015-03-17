@@ -21,7 +21,7 @@
 #include <QModelIndexList>
 #include <QSharedPointer>
 #include <QStack>
-
+#include <QStatusBar>
 #include "TestTreeModel.h"
 #include "TreeItem.h"
 #include "GTestExecutable.h"
@@ -39,6 +39,7 @@ TestTreeModel::TestTreeModel(QObject* parent, QPlainTextEdit *result)
 	rootItem.setData(data);
 
     m_result = result;
+    m_MainWindow = dynamic_cast<QMainWindow*>(parent);
 }
 
 /*! \brief Destructor
@@ -182,7 +183,7 @@ void TestTreeModel::BeginTest(GTest* test){
         return;
     QModelIndex index = createIndex(treeItem->row(), treeItem->column(), treeItem);
     selectionModel->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
-
+    m_MainWindow->statusBar()->showMessage("Running: " + test->objectName());
 }
 
 void TestTreeModel::EndTest(GTest * test, bool success){

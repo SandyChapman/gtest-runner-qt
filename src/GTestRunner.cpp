@@ -112,6 +112,7 @@ void GTestRunner::DisableRunAction() {
 void GTestRunner::EnableRunAction() {
     QApplication::restoreOverrideCursor();
     this->runTestsAction->setDisabled(false);
+    statusBar()->showMessage("Done.");
 }
 
 

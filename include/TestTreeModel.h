@@ -17,6 +17,7 @@
 #ifndef TESTTREEMODEL_H_
 #define TESTTREEMODEL_H_
 
+#include <QMainWindow>
 #include <QAbstractItemModel>
 #include <QAbstractItemView>
 #include <QPlainTextEdit>
@@ -61,6 +62,7 @@ private:
 	bool setCheckState(TreeItem* item, Qt::CheckState state, int recursionDirection = (TO_PARENT | TO_CHILDREN));
     QAtomicInt m_processCount;
     QPlainTextEdit *m_result;
+    QMainWindow *m_MainWindow;
 
 private slots:
 	void updateListing(GTestExecutable* gtest);
