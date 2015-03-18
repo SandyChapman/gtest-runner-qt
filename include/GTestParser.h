@@ -19,7 +19,7 @@
 
 #include <QDir>
 #include <QFile>
-
+#include <QXmlStreamAttributes>
 #include "GTestExecutableResults.h"
 
 /*! \brief This class parses an .xml file outputted by a gtest executable.
@@ -37,6 +37,7 @@ private:
 public:
 	GTestParser(QIODevice *inStream);
 	GTestExecutableResults* parse();
+    void parseAttributes(GTestResults* testResults, QXmlStreamAttributes attributes);
 
 };
 

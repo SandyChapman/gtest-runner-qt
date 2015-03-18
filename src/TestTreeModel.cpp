@@ -435,8 +435,9 @@ void  TestTreeModel::printResult ( const QModelIndex & selected, const QModelInd
         QVariant var = treeItem->data(0, Qt::UserRole);
         GTest* testItem = var.value<GTest*>();
         if(testItem != 0){
-            const GTestResults* testResults = testItem->getTestResults();
+            GTestResults* testResults = testItem->getTestResults();
             if(testResults != 0){
+                Result = testResults->serialiseAttributes();
                 QStringList messageList = testResults->getFailureMessages();
                 int ii = 0;
                 while(messageList.count()>ii){

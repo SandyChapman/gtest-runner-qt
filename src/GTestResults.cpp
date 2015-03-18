@@ -20,8 +20,8 @@
  *
  * \param name The name of the unit test to which this object belongs.
  */
-GTestResults::GTestResults(QString name)
-: name(name), time(-1), failureMessages(), status(UNDEFINED)
+GTestResults::GTestResults()
+: failureMessages()
 {}
 
 /*! \brief Destructor
@@ -29,3 +29,15 @@ GTestResults::GTestResults(QString name)
  */
 GTestResults::~GTestResults()
 {}
+
+
+QString GTestResults::serialiseAttributes(){
+    QString attribstr;
+    foreach(const QString &attr, attributes.keys()){
+        attribstr.append(attr);
+        attribstr.append(": ");
+        attribstr.append(attributes.value(attr));
+        attribstr.append("\n\r");
+    }
+    return attribstr;
+}

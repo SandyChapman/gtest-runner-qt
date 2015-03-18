@@ -33,7 +33,7 @@
 class GTestExecutableResults : public GTestSuiteResults {
 
 public:
-	GTestExecutableResults(QString name);
+    GTestExecutableResults();
 	virtual ~GTestExecutableResults();
 
 };

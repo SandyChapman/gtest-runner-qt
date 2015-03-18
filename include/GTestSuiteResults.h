@@ -32,23 +32,14 @@ class GTestSuiteResults : public GTestResults {
 
 protected:
 	QHash<QString, GTestResults*> testResultsHash; //!< A hash to map between a test name and its results.
-	uint errorCount;   //!< The number of errors produced by the suite's tests.
-	uint failureCount; //!< The number of failures in the suite's tests.
-	uint runCount;     //!< The number of tests that were run.
 
 public:
-	GTestSuiteResults(QString name);
+    GTestSuiteResults();
 	virtual ~GTestSuiteResults();
 
-	void addTestResults(GTestResults* testResults);
-	void setErrorCount(uint errorCount);
-	void setFailureCount(uint failureCount);
-	void setRunCount(uint runCount);
+    void addTestResults(GTestResults* testResults);
 
-	GTestResults* getTestResults(QString testName);
-	uint getErrorCount() const;
-	virtual uint getFailureCount() const;
-	uint getRunCount() const;
+    GTestResults* getTestResults(QString testName);
 };
 
 /*! \brief Adds the test result as a child of this test result.
@@ -57,26 +48,8 @@ public:
  * \param testResults The results of a single unit test.
  */
 inline void GTestSuiteResults::addTestResults(GTestResults* testResults) {
-	testResultsHash.insert(testResults->getName(), testResults);
+    testResultsHash.insert(testResults->get("name"), testResults);
 }
-
-/*! \brief Sets the number of errors this suite had when run.
- *
- * \param errorCount The number of test errors.
- */
-inline void GTestSuiteResults::setErrorCount(uint errorCount) { this->errorCount = errorCount; }
-
-/*! \brief Sets the number of failures this suite had when run.
- *
- * \param failureCount The number of test failures.
- */
-inline void GTestSuiteResults::setFailureCount(uint failureCount) { this->failureCount = failureCount; }
-
-/*! \brief Sets the number of unit tests that were run from this suite.
- *
- * \param runCount The number of tests run.
- */
-inline void GTestSuiteResults::setRunCount(uint runCount) { this->runCount = runCount; }
 
 /*! \brief Retrieves the test results given by the test named 'testName'.
  *
@@ -88,23 +61,5 @@ inline void GTestSuiteResults::setRunCount(uint runCount) { this->runCount = run
 inline GTestResults* GTestSuiteResults::getTestResults(QString testName) {
 	return testResultsHash.value(testName);
 }
-
-/*! \brief Retrieves the number of errors that occurred in running this suite.
- *
- * \return The number of errors.
- */
-inline uint GTestSuiteResults::getErrorCount() const { return errorCount; }
-
-/*! \brief Retrieves the number of failures that occurred in running this suite.
- *
- * \return The number of failed tests.
- */
-inline uint GTestSuiteResults::getFailureCount() const { return failureCount; }
-
-/*! \brief Retrieves the number of tests run by running this suite.
- *
- * \return The number of tests run.
- */
-inline uint GTestSuiteResults::getRunCount() const { return runCount; }
 
 #endif /* GTESTSUITERESULTS_H_ */

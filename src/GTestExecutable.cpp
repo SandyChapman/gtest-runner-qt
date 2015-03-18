@@ -217,8 +217,7 @@ void GTestExecutable::finishedTesting(int exitCode, QProcess::ExitStatus exitSta
 	GTestExecutableResults* testResults = parser.parse();
 	this->testResults = testResults;
 
-    GTest* it;
-    foreach(it , runList) {
+    foreach(GTest* it , runList) {
         GTestResults* testSuiteResults = testResults->getTestResults(it->objectName());
         if(testSuiteResults){
             it->receiveTestResults(testSuiteResults);

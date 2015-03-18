@@ -15,7 +15,6 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 #include <QDebug>
-#include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
 
 
@@ -61,18 +60,15 @@ GTestExecutableResults* GTestParser::parse() {
 	xmlSource->open(QIODevice::ReadOnly);
 	xmlSource->seek(0);
 	QXmlStreamReader xmlStream(xmlSource);
-	QXmlStreamAttributes attributes;
 	GTestExecutableResults* testExeResults;
 	GTestSuiteResults* testSuiteResults;
 	GTestResults* testResults;
 	//! \bug \todo Fix the bug in here causing "premature end-of-file" error.
 	while(!xmlStream.atEnd()) {
 		while(!xmlStream.readNextStartElement() && !xmlStream.hasError() && !xmlStream.atEnd()) { qDebug() << xmlStream.name(); }
-		attributes = xmlStream.attributes();
 		if(xmlStream.name() == "testcase") {
-			testResults = new GTestResults(attributes.value("name").toString());
-			testResults->setRunningTime(attributes.value("time").toString().toUInt());
-			testResults->setStatus(attributes.value("status").toString());
+			testResults = new GTestResults();
+            parseAttributes(testResults, xmlStream.attributes());
 			xmlStream.readNext();
 			while(xmlStream.name() != "testcase") { //no closing </testcase> yet
 				if(xmlStream.isCDATA())
@@ -81,24 +77,31 @@ GTestExecutableResults* GTestParser::parse() {
 			}
 			testSuiteResults->addTestResults(testResults);
 		}
-		else if(xmlStream.name() == "testsuite") {
-			testSuiteResults = new GTestSuiteResults(attributes.value("name").toString());
-			testSuiteResults->setRunCount(attributes.value("tests").toString().toUInt());
-			testSuiteResults->setFailureCount(attributes.value("failures").toString().toUInt());
-			testSuiteResults->setErrorCount(attributes.value("errors").toString().toUInt());
-			testSuiteResults->setRunningTime(attributes.value("time").toString().toUInt());
-			testExeResults->addTestResults(testSuiteResults);
+        else if(xmlStream.name() == "testsuite") {
+            testSuiteResults = new GTestSuiteResults();
+            parseAttributes(testSuiteResults, xmlStream.attributes());
+            testExeResults->addTestResults(testSuiteResults);
+        }
+        else if(xmlStream.name() == "testsuites") {
+            testExeResults = new GTestExecutableResults();
+            parseAttributes(testExeResults, xmlStream.attributes());
 		}
-		else if(xmlStream.name() == "testsuites") {
-			testExeResults = new GTestExecutableResults(attributes.value("name").toString());
-			testExeResults->setRunCount(attributes.value("tests").toString().toUInt());
-			testExeResults->setFailureCount(attributes.value("failures").toString().toUInt());
-			testExeResults->setErrorCount(attributes.value("errors").toString().toUInt());
-			testExeResults->setRunningTime(attributes.value("time").toString().toUInt());
-		}
-		if(xmlStream.hasError()) {
+
+        xmlStream.readNext();
+        if(xmlStream.hasError()) {
 			qDebug() << xmlStream.errorString();
 		}
 	}
 	return testExeResults;
+}
+
+
+void GTestParser::parseAttributes(GTestResults* testResults, QXmlStreamAttributes attributes) {
+    QVector<QXmlStreamAttribute>::iterator it = attributes.begin();
+    while( it != attributes.end()){
+        QString attrName = it->name().toString();
+        QString attrVal = it->value().toString();
+        testResults->addAttribute(attrName, attrVal);
+        ++it;
+    }
 }
