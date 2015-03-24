@@ -252,8 +252,10 @@ void TestTreeModel::populateTestResult() {
 	else
 		setData(index, QVariant(QBrush(QColor(0xFF,0x88,0x88,0xFF))), Qt::BackgroundRole);
 
-    if(m_processCount.deref())
+    if(m_processCount.deref()){
         emit allTestsCompleted();
+        printResult(selectionModel->currentIndex(), QModelIndex());
+    }
 }
 
 /*! \brief Clear background of the Test Tree before running it.
