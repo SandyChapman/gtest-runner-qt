@@ -20,8 +20,8 @@
  *
  * \param name The name of the unit test this result belongs to.
  */
-GTestSuiteResults::GTestSuiteResults(QString name)
-: GTestResults(name)
+GTestSuiteResults::GTestSuiteResults()
+: GTestResults()
 {}
 
 /*! \brief Destructor

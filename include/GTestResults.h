@@ -20,8 +20,6 @@
 #include <QSharedPointer>
 #include <QStringList>
 
-#include "MetaItem.h"
-
 /* \brief This class logically represents the results of running a unit test.
  *
  * The class is the analogue to a gtest unit test result. It consists of the name of
@@ -32,68 +30,27 @@
  */
 class GTestResults {
 
-public:
-	//! The run status of the GTest.
-	enum STATUS {
-		RUN,		//!< The test was run.
-		//! \todo Investigate other run status of a GTest.
-		UNDEFINED	//!< Currently not sure what the other possibilities are.
-	};
-
-	//! The outcome of the running of the test.
-	enum OUTCOME {
-		PASSED,		//The test passed.
-		FAILED		//The test has at least one failure.
-	};
-
 protected:
-	QString name;	//!< The name of the GTest that corresponds to this result.
-	uint time;		//!< The time it took to run this test (or suite of tests).
 	QStringList failureMessages;	//!< The list of failure messages --unparsed.
-	STATUS status;	//!< The run status of the unit test \see GTestResults::STATUS
+    QHash<QString, QString> attributes;
 
 public:
-	GTestResults(QString name);
+    GTestResults();
 	virtual ~GTestResults();
 
-	//TODO::Check whether these should be private and have GTestExecutable as a friend.
-	void setStatus(QString status);
-	void setRunningTime(uint runTime);
 	void addFailureMessage(QString failureMsg);
+    void addAttribute(QString name, QString value) {attributes.insert(name, value);}
+    QString serialiseAttributes();
 
-	STATUS getStatus() const;
-	QString getName() const;
-	uint getRunningTime() const;
-	virtual uint getFailureCount() const;
+    QString get(QString iname){ return attributes.value(iname);}
+
+    virtual uint getFailureCount() const;
 	QString getFailureMessage(uint index) const;
 	QStringList getFailureMessages() const;
 
 	virtual GTestResults* getTestResults(QString name);
-	virtual MetaItem* createMetaItem() const;
 
 };
-
-/*! \brief Sets the run status of the gtest.
- *
- * This function takes a QString from the 'run' attribute in the
- * .xml file. It parses this and sets it to a enum value for later
- * retrieval.
- * \param statusString The status as retrieved from the gtest .xml file.
- */
-inline void GTestResults::setStatus(QString statusString) {
-	if(statusString == "run")
-		status = RUN;
-}
-
-/*! \brief Sets the elapsed running time of the gtest.
- *
- * This function takes  the 'time' attribute in the .xml file.
- * It parses this and sets it to a enum value for later retrieval.
- * \param runTime The running time as retrieved from the gtest .xml file.
- */
-inline void GTestResults::setRunningTime(uint runTime) {
-	time = runTime;
-}
 
 /*! \brief Adds a failure message to the list of failure messages.
  *
@@ -102,33 +59,6 @@ inline void GTestResults::setRunningTime(uint runTime) {
  */
 inline void GTestResults::addFailureMessage(QString failureMsg) {
 	failureMessages.append(failureMsg);
-}
-
-/*! \brief Retrieves the run status of the unit test.
- *
- * This function gives the run status for the unit test result that
- * this object represents.
- * \return The run status of the unit test.
- */
-inline GTestResults::STATUS GTestResults::getStatus() const { return status; }
-
-/*! \brief Retrieves the name of the unit test this result belongs to.
- *
- * \return The name of the unit test this result belongs to.
- */
-inline QString GTestResults::getName() const {
-	return name;
-}
-
-/*! \brief Retrieves the time elapsed from this unit test.
- *
- * For single tests, this is the time it took to run the unit test.
- * In subclasses, this is used to get the total running time of an
- * aggregate of tests.
- * \return The total elapses time for this test.
- */
-inline uint GTestResults::getRunningTime() const {
-	return time;
 }
 
 /*! \brief Retrieves the total number of failure messages for this test.
@@ -169,6 +99,6 @@ inline QStringList GTestResults::getFailureMessages() const {
  * to other test results.
  * \return A pointer to a GTestResult.
  */
-inline GTestResults* GTestResults::getTestResults(QString name) { return (name == this->name ? this : 0); }
+inline GTestResults* GTestResults::getTestResults(QString name) { return (name == attributes.value("name") ? this : 0); }
 
 #endif /* GTESTRESULTS_H_ */

@@ -217,8 +217,7 @@ void GTestExecutable::finishedTesting(int exitCode, QProcess::ExitStatus exitSta
 	GTestExecutableResults* testResults = parser.parse();
 	this->testResults = testResults;
 
-    GTest* it;
-    foreach(it , runList) {
+    foreach(GTest* it , runList) {
         GTestResults* testSuiteResults = testResults->getTestResults(it->objectName());
         if(testSuiteResults){
             it->receiveTestResults(testSuiteResults);
@@ -270,8 +269,32 @@ void GTestExecutable::standardErrorAvailable() {
 void GTestExecutable::readExecutableOutput(QBuffer& standardChannel) {
     // Collect evereything using QByteArray.
 	while(gtest->canReadLine()) {
-            standardChannel.write(gtest->readLine());
-	}
+        QByteArray output = gtest->readLine();
+        standardChannel.write(output);
+        QString line = output;
+        if( line.startsWith("[ ") ){
+            qDebug() << line;
+            QString testName = line;
+            testName = testName.remove(0,13); // remove the [] and keep the test name.
+            testName = testName.split(' ').at(0);
+            testName = testName.trimmed();
+            QStringList testsplit = testName.split(".");
+            if(testsplit.size() > 1){
+                GTestSuite* testSuite = findChild<GTestSuite*>(testsplit.at(0));
+                GTest* test = testSuite->findChild<GTest*>(testsplit.at(1));
+
+                if(line.contains("[ RUN      ]")){
+                    emit BeginTest(test);
+                }
+                else if (line.contains("[       OK ]")){
+                    emit EndTest(test, true);
+                }
+                else if (line.contains("[  FAILED  ]")){
+                    emit EndTest(test, false);
+                }
+            }
+        }
+    }
 }
 
 /*! \brief Slot to be called when the QProcess has finished listing the tests.

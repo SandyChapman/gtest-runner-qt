@@ -39,7 +39,7 @@ class GTest : public QObject {
 Q_OBJECT
 
 protected:
-	//QString name;
+    //QString name; we use QObject::objectName
 	/**< Represents the name of the test.
 					 *   In the case of the GTestExecutable class, this holds
 					 *   the executable's file path.
@@ -57,7 +57,7 @@ public:
     GTest(QObject* parent, QString name = QString());
     GTest(GTestSuite* parent, QString name = QString());
 	virtual ~GTest();
-	const GTestResults* getTestResults() const;
+    GTestResults* getTestResults() const;
 
 	virtual void receiveTestResults(GTestResults* testResults);
 	virtual void run();
@@ -83,6 +83,6 @@ inline void GTest::run() { emit requestingRun(objectName()); }
  * The pointer will be null if the test hasn't been run yet.
  * \return the pointer to the test results object
  */
-inline const GTestResults* GTest::getTestResults() const { return testResults; }
+inline GTestResults *GTest::getTestResults() const { return testResults; }
 
 #endif /* GTEST_H_ */

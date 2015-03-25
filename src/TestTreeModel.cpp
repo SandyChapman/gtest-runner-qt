@@ -21,8 +21,7 @@
 #include <QModelIndexList>
 #include <QSharedPointer>
 #include <QStack>
-
-#include "MetaModel.h"
+#include <QStatusBar>
 #include "TestTreeModel.h"
 #include "TreeItem.h"
 #include "GTestExecutable.h"
@@ -30,15 +29,17 @@
 /*! \brief Constructor
  *
  */
-TestTreeModel::TestTreeModel(QObject* parent)
+TestTreeModel::TestTreeModel(QObject* parent, QPlainTextEdit *result)
 : TreeModel(parent)
 {
 	QList<QMap<int, QVariant> > data;
 	QMap<int, QVariant> datum;
 	datum.insert(Qt::DisplayRole, "Test Name");
-	datum.insert(Qt::MetaDataRole, "Test Results");
 	data.append(datum);
 	rootItem.setData(data);
+
+    m_result = result;
+    m_MainWindow = dynamic_cast<QMainWindow*>(parent);
 }
 
 /*! \brief Destructor
@@ -59,10 +60,10 @@ TestTreeModel::ERROR TestTreeModel::addDataSource(const QString filepath, const 
     newTest->setResultPath(outputDir);
 	switch(newTest->getState()) {
 	case GTestExecutable::VALID:
-		QObject::connect(newTest.data(), SIGNAL(listingReady(GTestExecutable*)),
-						 this, SLOT(updateListing(GTestExecutable*)));
-		QObject::connect(this, SIGNAL(aboutToRunTests()),
-						 newTest.data(), SLOT(resetRunState()));
+        QObject::connect(newTest.data(), SIGNAL(listingReady(GTestExecutable*)), this, SLOT(updateListing(GTestExecutable*)));
+        QObject::connect(newTest.data(), SIGNAL(BeginTest(GTest*)), this, SLOT(BeginTest(GTest*)));
+        QObject::connect(newTest.data(), SIGNAL(EndTest(GTest*, bool)), this, SLOT(EndTest(GTest*, bool)));
+        QObject::connect(this, SIGNAL(aboutToRunTests()), newTest.data(), SLOT(resetRunState()));
 		//We insert it so that it doesn't auto-delete from the shared ptr.
 		//Will probably be useful later on when we want to save settings.
 		testExeHash.insert(newTest->objectName(), newTest);
@@ -76,6 +77,23 @@ TestTreeModel::ERROR TestTreeModel::addDataSource(const QString filepath, const 
 	default:
 		return UNKNOWN;
 	}
+}
+
+
+/*! \brief Kill all QProcess.
+ */
+void TestTreeModel::AbortCurrentTests(){
+    // Send kill signal to the QProcess.
+    QHash<QString, QSharedPointer<GTestExecutable> >::iterator it = testExeHash.begin();
+    while(it != testExeHash.end()) {
+        (*it)->Kill();
+        ++it;
+    }
+
+    // Cleanup
+    while(m_processCount.deref())
+        ;
+    emit allTestsCompleted();
 }
 
 /*! \brief Creates a tree item and sets up some slot/signals.
@@ -176,7 +194,26 @@ void TestTreeModel::updateListing(GTestExecutable* gtest) {
 	emit layoutChanged();
 }
 
-						 
+void TestTreeModel::BeginTest(GTest* test){
+    TreeItem* treeItem = itemTestHash.value(test);
+    if(treeItem == 0)
+        return;
+    QModelIndex index = createIndex(treeItem->row(), treeItem->column(), treeItem);
+    selectionModel->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
+    m_MainWindow->statusBar()->showMessage("Running: " + test->objectName());
+}
+
+void TestTreeModel::EndTest(GTest * test, bool success){
+    TreeItem* treeItem = itemTestHash.value(test);
+    if(treeItem == 0)
+        return;
+    QModelIndex index = createIndex(treeItem->row(), treeItem->column(), treeItem);
+    if(success)
+        setData(index, QVariant(QBrush(QColor(0xAB,0xFF,0xBB,0xFF))), Qt::BackgroundRole);
+    else
+        setData(index, QVariant(QBrush(QColor(0xFF,0x88,0x88,0xFF))), Qt::BackgroundRole);
+}
+
 /*! \brief Populates a test result into the test tree.
  *
  * This function takes a QObject* which should be a TestTreeWidgetItem.
@@ -215,19 +252,10 @@ void TestTreeModel::populateTestResult() {
 	else
 		setData(index, QVariant(QBrush(QColor(0xFF,0x88,0x88,0xFF))), Qt::BackgroundRole);
 
-	//clean up the old meta item
-	emit metaDataAboutToBeChanged(index);
-	var = treeItem->data(0, Qt::MetaDataRole);
-	MetaItem* oldMetaItem = var.value<MetaItem*>();
-	if(oldMetaItem)
-		delete oldMetaItem;
-
-	//create a new meta item and insert it into the tree item.
-	var.setValue<MetaItem* >(testResults->createMetaItem());
-	treeItem->setData(var, 0, Qt::MetaDataRole);
-
-    if(m_processCount.deref())
+    if(m_processCount.deref()){
         emit allTestsCompleted();
+        printResult(selectionModel->currentIndex(), QModelIndex());
+    }
 }
 
 /*! \brief Clear background of the Test Tree before running it.
@@ -304,9 +332,6 @@ void TestTreeModel::updateAllListings() {
  * \return A QVariant of the data.
  */
 QVariant TestTreeModel::data(const QModelIndex& index, int role) const {
-	if(role != Qt::MetaDataRole)
-		return TreeModel::data(index, role);
-
 	TreeItem *item = static_cast<TreeItem*>(index.internalPointer());
 	if(item)
 		return item->data(0, role);
@@ -398,6 +423,32 @@ bool TestTreeModel::setCheckState(TreeItem* item, Qt::CheckState newState, int r
 	QModelIndex index(createIndex(item->row(),0,item));
 	emit dataChanged(index, index);
 	return retval;
+}
+
+/*! \brief Populate the result pane.
+ *
+ */
+void  TestTreeModel::printResult ( const QModelIndex & selected, const QModelIndex & deselected ){
+    Q_UNUSED(deselected);
+    QString Result;
+
+    TreeItem *treeItem = static_cast<TreeItem*>(selected.internalPointer());
+    if(treeItem != 0){
+        QVariant var = treeItem->data(0, Qt::UserRole);
+        GTest* testItem = var.value<GTest*>();
+        if(testItem != 0){
+            GTestResults* testResults = testItem->getTestResults();
+            if(testResults != 0){
+                Result = testResults->serialiseAttributes();
+                QStringList messageList = testResults->getFailureMessages();
+                int ii = 0;
+                while(messageList.count()>ii){
+                    Result.append(messageList.at(ii++));
+                }
+            }
+        }
+    }
+    m_result->setPlainText(Result);
 }
 
 void TestTreeModel::removeSelectedTests() {
